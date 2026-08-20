@@ -1,0 +1,162 @@
+# =============================================================================
+# AI-TRAINER PROJECT — .gitignore
+# =============================================================================
+# Personal/workspace files (hosted on fan-dragon, mirrored to genorbox1)
+# =============================================================================
+AGENTS.md
+SOUL.md
+TOOLS.md
+USER.md
+IDENTITY.md
+HEARTBEAT.md
+BOOTSTRAP.md
+DREAMS.md
+MEMORY.md
+memory/
+
+# OpenClaw runtime state
+.cursor/
+.clawhub/
+.openclaw/
+.openclaw-repair/
+.openclaw-repair/**
+.heartbeat/
+.qwen3_data/
+.clawhub/
+vault/
+state/
+scratch/
+subagent-spawn-test-*.txt
+hello.txt
+heartbeat/
+.qwen3_data/
+
+# =============================================================================
+# PYTHON RUNTIME / CACHES
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*_build.py
+*_gen.py
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+*.egg
+.installed.cfg
+MANIFEST
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright_cache/
+htmlcov/
+coverage.xml
+.coverage
+.coverage.*
+nose.cfg
+.tox/
+.nox/
+.cache/
+
+# =============================================================================
+# VIRTUAL ENVIRONMENTS
+# =============================================================================
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+venvs/
+
+# =============================================================================
+# MODELFILES / DATA ARTIFACTS
+# (Track source/scripts, not generated binaries)
+# =============================================================================
+models/
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.tflite
+*.h5
+*.pkl
+*.joblib
+
+# Generated training data (regenerable from scripts)
+unsloth_compiled_cache/
+
+# Test outputs
+tests/coverage_html/
+
+# =============================================================================
+# SECRETS / CREDENTIALS
+# =============================================================================
+.env
+.env.*
+!.env.example
+*.env
+api_keys.txt
+secrets/
+*.key
+*.pem
+*.crt
+*.cer
+*.pfx
+*.p12
+service-account*.json
+gcloud-credentials.json
+
+# =============================================================================
+# LOGS / PROCESS IDS / RUNTIME
+# =============================================================================
+*.log
+server.log
+server.pid
+*.pid
+logs/
+
+# =============================================================================
+# IDE / EDITOR
+# =============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+*.orig
+*.rej
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# =============================================================================
+# TEMPORARY DEBUG ARTIFACTS
+# =============================================================================
+debug_*.py
+# (test_*.py NOT ignored — keep tests/ tracked)
+
+# OS temp files
+*.tmp
+*~

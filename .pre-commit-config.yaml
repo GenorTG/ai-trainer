@@ -1,0 +1,115 @@
+# Pre-commit hooks for AI Trainer
+# Install: pre-commit install
+# Run:     pre-commit run --all-files
+
+repos:
+  # ===========================================================================
+  # LOCAL HOOKS — file hygiene
+  # ===========================================================================
+  - repo: local
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        entry: python -c "import sys, re; [print(re.sub(r'[ \\t]+$', '', l), end='') for l in sys.stdin]"
+        language: system
+        types: [text]
+        stages: [pre-commit]
+
+      - id: end-of-file-fixer
+        name: Ensure files end with newline
+        entry: python -c "import sys; data = sys.stdin.read(); sys.stdout.write(data + ('' if data.endswith('\n') else '\n'))"
+        language: system
+        types: [text]
+        stages: [pre-commit]
+
+      - id: check-merge-conflict
+        name: Check for merge conflict markers
+        entry: python -c "import sys; content = sys.stdin.read(); sys.exit(1 if any(m in content for m in ['<<<<<<<', '=======', '>>>>>>>']) else 0)"
+        language: system
+        types: [text]
+        stages: [pre-commit]
+
+      - id: check-yaml
+        name: Validate YAML files
+        entry: python -c "import sys, yaml; yaml.safe_load(sys.stdin)"
+        language: system
+        types: [yaml]
+        stages: [pre-commit]
+
+      - id: check-toml
+        name: Validate TOML files
+        entry: python -c "import sys, tomllib; tomllib.loads(sys.stdin.read())"
+        language: system
+        types: [toml]
+        stages: [pre-commit]
+
+      - id: check-json
+        name: Validate JSON files
+        entry: python -c "import sys, json; json.load(sys.stdin)"
+        language: system
+        types: [json]
+        stages: [pre-commit]
+
+      - id: check-no-secrets
+        name: Detect committed secrets
+        entry: tools/check-secrets.sh
+        language: system
+        types: [text]
+        stages: [pre-commit]
+
+  # ===========================================================================
+  # RUFF — Python linter + formatter
+  # ===========================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        name: ruff check
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+        files: '^(trainer|server)/.*\.py$'
+
+      - id: ruff-format
+        name: ruff format
+        types_or: [python, pyi]
+        files: '^(trainer|server)/.*\.py$'
+
+  # ===========================================================================
+  # MYPY — Python type checker
+  # ===========================================================================
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        name: mypy type check
+        args: [--ignore-missing-imports, --no-strict-optional]
+        files: '^(trainer|server)/.*\.py$'
+        additional_dependencies: [pydantic, fastapi, jinja2]
+        pass_filenames: false
+        stages: [pre-commit]
+
+  # ===========================================================================
+  # PYTEST — fast unit tests (must pass on commit)
+  # ===========================================================================
+  - repo: local
+    hooks:
+      - id: pytest-unit-fast
+        name: pytest (unit, fast)
+        entry: python -m pytest tests/unit -m "not slow" -q --tb=short
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-commit]
+
+  # ===========================================================================
+  # BANDIT — security linter
+  # ===========================================================================
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        name: bandit security check
+        args: [-r, trainer/, server/, -ll, --skip, B101]
+        files: '^(trainer|server)/.*\.py$'
+        pass_filenames: false
+        stages: [pre-commit]

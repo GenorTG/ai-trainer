@@ -1,0 +1,157 @@
+# AI Trainer — Project-level configuration
+# Per-tool configs are merged into trainer/pyproject.toml and server/pyproject.toml
+# but this file defines the shared standards.
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = [
+    ".venv",
+    "models",
+    "data",
+    "unsloth_compiled_cache",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+# Standard rule sets
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific
+    "N",   # pep8-naming
+    "PIE", # flake8-pie
+    "PT",  # flake8-pytest-style
+    "RET", # flake8-return
+    "YTT", # flake8-2020
+    "ARG", # flake8-unused-arguments
+    "PL",  # pylint
+]
+
+# Allow common false positives
+ignore = [
+    "PLR0913",  # too many arguments (FastAPI endpoints)
+    "PLR2004",  # magic value used in comparison (tests use them)
+    "PLR0915",  # too many statements (model init has many)
+    "E501",     # line too long (handled by formatter)
+    "B008",     # do not perform function calls in argument defaults
+    "B904",     # raise from (we use bare raise)
+    "ARG001",   # unused function argument (FastAPI Depends)
+    "ARG002",   # unused method argument
+    "N803",     # argument name should be lowercase
+    "N806",     # variable in function should be lowercase
+    "SIM108",   # use ternary instead of binary if
+    "RET504",   # unnecessary assignment before return
+    "PT011",    # pytest.raises (we use it intentionally)
+    "PT027",    # pytest.raises without match
+    "UP007",    # use X | Y for UnionType (we use Optional still)
+    "UP006",    # use lowercase type hints (Optional[X] still)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use longer lines, unused imports, etc.
+"tests/*" = [
+    "PLR2004",  # magic values OK in tests
+    "N802",     # function name should be lowercase (test_* methods)
+    "N806",     # variable in function should be lowercase
+    "ARG",      # unused arguments (fixtures)
+    "PT009",    # use a regular assert instead of unittest-style
+    "PT027",    # pytest.raises without match
+]
+"**/__init__.py" = ["F401"]  # unused imports OK in __init__.py
+
+[tool.ruff.lint.isort]
+known-first-party = ["finetune_studio", "inference_server"]
+combine-as-imports = true
+force-sort-within-sections = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+no_strict_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+show_error_codes = true
+exclude = [
+    "models",
+    "data",
+    "tests/",
+    "unsloth_compiled_cache",
+    ".venv",
+]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["finetune_studio.benchmarks.*"]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "-ra",              # show summary of all test results
+    "--strict-markers", # fail on unknown markers
+    "--strict-config",  # fail on invalid config
+    "--tb=short",       # short traceback format
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: unit test (fast, no I/O)",
+    "integration: integration test (multiple components)",
+    "api: HTTP / FastAPI endpoint test",
+    "frontend: HTML / JS / browser test",
+    "slow: slow test (model loading, GPU) — excluded from --fast runs",
+]
+filterwarnings = [
+    "error",                          # treat warnings as errors
+    "ignore::DeprecationWarning",     # but allow deprecation warnings
+    "ignore::PendingDeprecationWarning",
+    "ignore::pytest.PytestUnknownMarkWarning",  # allow custom markers
+    "ignore::starlette.deprecationWarning",     # starlette deprecation OK
+]
+
+[tool.coverage.run]
+branch = true
+source = ["trainer", "server"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/.venv/*",
+    "models/*",
+    "data/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "pass",
+    "raise ImportError",
+    "except ImportError",
+]
+precision = 1
+show_missing = true
+skip_covered = false
