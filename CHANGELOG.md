@@ -1,60 +1,123 @@
-# CHANGELOG — AI Trainer
+# Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to AI Trainer are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — 2026-08-20
+## [Unreleased]
 
 ### Added
-- **ai-trainer repo**: Unified project structure (`trainer/` + `server/` + `data/` + `tests/`)
-- **Git repo** with `.gitignore` excluding personal/runtime/model artifacts
-- **Conventional Commits** setup
-- **Pre-commit hooks** config (ruff, mypy, fast tests)
-- **CONTRIBUTING.md** with workflow + commit conventions + file layout
-- **README.md** with status, quickstart, architecture
-- **3-layout path resolvers** in tests (genorbox1 + fan-dragon old + fan-dragon ai-trainer)
+- (nothing yet)
+
+## [0.2.0] - 2026-08-20
+
+### Added
+- **Organizational infrastructure** for the unified `ai-trainer/` project:
+  - `Makefile` with `test/lint/type-check/clean/deploy/pre-commit-install/version-bump-patch/all-checks/ci` targets
+  - `.pre-commit-config.yaml` with ruff, mypy, pytest-fast, bandit, and local hygiene hooks
+  - `pyproject.toml` shared config (ruff, mypy, pytest, coverage)
+  - `tools/deploy.sh` — rsync inference_server + finetune_studio + tests to genorbox1
+  - `tools/bump.py` — semver bump in both pyproject.toml files
+  - `tools/check-secrets.sh` — pre-commit secret detection
+  - `LICENSE` (MIT) with Gemma/Phi-4 third-party license notes
+  - `SECURITY.md` — vulnerability reporting, security practices
+  - `ARCHITECTURE.md` — ASCII system/data-flow/deployment diagrams
+  - `API.md` — HTTP API reference for trainer + inference-server
+  - `.editorconfig` — consistent coding style
+  - `.gitattributes` — file type detection, export-ignore
+  - `docs/DEVELOPMENT.md` — fan-dragon dev setup guide
+  - `docs/TROUBLESHOOTING.md` — common issues + fixes
+  - `docs/README.md` — central docs index
+  - 3 ADRs in `docs/adr/`:
+    - 001 — Why llama.cpp over vLLM
+    - 002 — Why Gemma 4 E4B over Llama 3
+    - 005 — Why fan-dragon as primary dev host
+  - Per-module READMEs in `trainer/`, `server/`, `data/`, `tests/`, `models/`
+- **GitHub Actions CI** (`.github/workflows/ci.yml`):
+  - Lint job (ruff, bandit, pydocstyle)
+  - Type-check job (mypy)
+  - Test-unit job (fast unit tests)
+  - Test-full job (all tests with coverage report)
+  - Build job (Docker image)
+- **153 new tests** across 4 files:
+  - `test_tools.py` (32 tests) — `inference_server/tools.py` 13% → ~95%
+  - `test_parser.py` (45 tests) — `inference_server/parser.py` 0% → ~95%
+  - `test_agent.py` (46 tests) — `inference_server/agent.py` 13% → ~90%
+  - `test_quality.py` (30 tests) — `finetune_studio/webui/routes/quality.py` 39% → ~100%
+- **Cross-machine test path resolvers** — `tests/unit/test_config.py`, `tests/frontend/test_cli_gui_coverage.py`, `tests/frontend/test_pages.py`, `tests/frontend/test_static.py` updated to support 3 layouts:
+  - genorbox1: `~/.openclaw/workspace/finetune-studio/`
+  - fan-dragon (old): `~/finetune-studio/`
+  - fan-dragon (new ai-trainer): `~/ai-trainer/trainer/`
+- **Conventional Commits workflow** — `CONTRIBUTING.md` documents scopes and format
 
 ### Changed
-- **Migrated** from `~/finetune-studio/` + `~/inference-server/` + `~/gemma-training/` to unified `~/ai-trainer/` repo
-- **Renamed** `finetune-studio` → `trainer/` (kept Python package name `finetune_studio`)
-- **Renamed** `inference-server` → `server/` (kept Python package name `inference_server`)
+- `trainer/src/finetune_studio/config.py` — `RAGSettings` moved before `Settings` class to avoid forward-reference NameError
+- `trainer/src/finetune_studio/webui/routes/pages.py` — updated to Starlette 1.0.0 `TemplateResponse(request, name, context)` signature
+- All test files: mock at source module for lazy imports
+- `tests/frontend/conftest.py` — overrides `cleanup_caches` (tolerates missing parent modules)
 
 ### Fixed
-- **`finetune_studio.config.RAGSettings` forward-reference bug** — moved class def before Settings()
-- **Starlette 1.0.0 `TemplateResponse` signature** — added required `request` first arg in pages.py
-- **mocker.patch on unloaded modules** — added explicit imports before patch in conftest fixtures
+- **Python scoping bug** in test path resolvers — list comprehensions no longer reference loop variables
+- **`mocker.patch` failure** when module not loaded — explicit `import` before patch in 3 conftest.py files
+- **ComfyUI interference** — documented rule: pause benchmark work + notify user when GPU >90%
 
-## [0.1.0] — 2026-08-19
+### Statistics
+- **Test count**: 573 → 726 tests passing
+- **Source files**: 65 → 67 (added test files)
+- **Documentation**: 5 → 15 markdown files
+- **Git commits**: 7 conventional commits
 
-### Initial Setup
-- **Chris AI v20** trained, exported (5.3GB GGUF), deployed to genorbox1
-- **Chris AI v21** trained with knowledge preservation (97% persona + 3% general)
-- **Tool-calling parser** handles 4+ formats (JSON, XML, Qwen native)
-- **Tool-calling benchmark** at 90% (9/10) on v21 with native Jinja template
-- **Jinja template extraction** from GGUF metadata (18808 chars for v21)
-- **Industry-standard benchmarks** integrated (MMLU, HellaSwag, ARC, TruthfulQA, GSM8K, Winogrande)
-- **Real benchmark results** vs Phi-4 14B baseline (v20: 49.2%, v21: 48.3%, Phi-4: 17.5%)
-- **Test suite**: 573 tests passing (416 unit + 187 API + 105 frontend)
-- **Coverage**: 64% overall (HTML report at `tests/coverage_html/`)
-- **Lint clean**: ruff 0, pyflakes 0, compile 0, mypy 0
-- **Cross-machine**: tests work on both genorbox1 and fan-dragon
+## [0.1.0] - 2026-08-19
 
 ### Added
-- **finetune-studio**: full training app (WebUI + CLI + RAG + benchmarks + tool calling)
-- **inference-server**: OpenAI-compatible API with RAG, MCP, samplers
-- **DOCUMENTATION.md**: 13KB central reference, 63 files indexed
-- **Dummy-proof comments**: line-by-line in renderer.py + inference.py (18KB each)
-- **Teaching docstrings**: 63 files with "WHAT THIS FILE DOES" headers
-- **DRY conftest.py**: 13KB shared fixtures, no duplication
+- **Initial release** of AI Trainer — unified AI training/benchmarking/hosting platform
+- **trainer/** package (was `finetune-studio`):
+  - FastAPI WebUI on port 7860
+  - CLI with 15 commands (webui, train, test, suite, validate, convert, rag, compare, benchmark, analyze, augment, optimize, validate-hallucination, rag-test, models)
+  - Training engine (QLoRA, Unsloth, TRL)
+  - Industry-standard benchmarks (MMLU, HellaSwag, ARC, TruthfulQA, GSM8K, Winogrande)
+  - 7 sampler presets (deterministic, balanced, creative, conservative, chris_ai_v20/v21, testing)
+  - RAG with ChromaDB + sentence-transformers
+  - MCP server with rag_search, rag_ingest, rag_list, calculator, web_search
+  - Training quality tools (DataQualityAnalyzer, KnowledgePreserver, HallucinationGuard, DataAugmenter, ConfigOptimizer)
+  - 33-format document parsers
+  - Model comparison engine
+- **server/** package (was `inference-server`):
+  - v1 OpenAI-compatible server (port 8888)
+  - v2 full-featured server (RAG + tool calling + MCP)
+  - llama.cpp wrapper with full GPU offload
+  - 33 document parsers
+  - Jinja chat template extraction from GGUF
+  - Tool-call parser (4+ formats: JSON, XML, Qwen native, function format)
+  - 7 sampler presets
+  - Real-time learning via `save_conversation_knowledge`
+- **data/** scripts (training data generation):
+  - `gen_v19.py`, `gen_v20.py`, `gen_v21.py` — synthetic persona data
+  - `data_v21_training.jsonl` (6.1MB) — 97% persona
+  - `data_v21_knowledge.jsonl` (18KB) — 3% general knowledge
+- **tests/** suite:
+  - 573 tests, 64% coverage
+  - 27.7s end-to-end via master runner
+  - DRY conftest.py with shared fixtures
+  - All heavy resources mocked (GGUF, llama.cpp, GPU/CUDA, ComfyUI)
 
-### Known Issues
-- **`agentic.py`** at 0% coverage — untested (next test target)
-- **`parser.py`** at 0% coverage — legacy, may be removed
-- **`tools.py`** at 13% coverage — needs more tests
-- **`quality.py`** at 39% coverage — data tools API tests pending
-- **Phi-4 14B baseline** blocked on ComfyUI GPU (15-17GB used)
+### Quality
+- **Lint state**: ruff 0, pyflakes 0, compile 0, mypy 0 errors (across 65 source files)
+- **Test state**: 573 passing, 2 skipped (fastapi TestClient, no real models)
+- **Documentation**: 13KB DOCUMENTATION.md, per-file dummy-proof comments on critical modules
 
-[Unreleased]: https://github.com/internal/ai-trainer/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/internal/ai-trainer/releases/tag/v0.1.0
+### Performance
+- Chris AI v21 GGUF achieves **90% tool-calling** with native Jinja template
+- Chris AI v20 (production): 49.2% overall on 6-benchmark suite
+- Chris AI v21 (latest): 48.3% overall
+- Phi-4 14B baseline: 17.5% (for comparison)
+
+### Training
+- v21 training: knowledge preservation via data mixing (97% persona + 3% general)
+- v21 GGUF: 5.3GB, deployed to fan-dragon
+- v20 GGUF: 5.0GB, deployed to genorbox1 production
+
+[Unreleased]: https://github.com/genorbox1/ai-trainer/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/genorbox1/ai-trainer/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/genorbox1/ai-trainer/releases/tag/v0.1.0
