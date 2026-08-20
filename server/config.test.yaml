@@ -1,0 +1,29 @@
+server:
+  host: "127.0.0.1"
+  port: 8080
+
+model:
+  path: "./models/qwen2.5-1.5b-instruct-q4_k_m.gguf"
+  n_gpu_layers: 99
+  n_ctx: 8192
+
+rag:
+  enabled: true
+  store_path: "./rag_data/store"
+  documents_path: "./rag_data/documents"
+  embedding_model: "all-MiniLM-L6-v2"
+  chunk_size: 512
+  chunk_overlap: 50
+  top_k: 5
+  min_score: 0.2
+  max_context_length: 2000
+
+inference:
+  max_tokens: 1024
+  temperature: 0.3
+  top_p: 0.9
+  repeat_penalty: 1.05
+
+api:
+  key: ""
+  cors: true
