@@ -1,0 +1,62 @@
+# Git attributes — file type detection, line endings, diffs
+
+# Default to LF
+* text=auto eol=lf
+
+# Explicit binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.gguf binary
+*.safetensors binary
+*.pkl binary
+*.pyc binary
+*.pyd binary
+*.so binary
+
+# Python source — always LF
+*.py text eol=lf
+*.pyi text eol=lf
+
+# Markdown — keep trailing whitespace for line breaks
+*.md text eol=lf whitespace=-trailing-space
+
+# YAML, JSON, TOML — LF, no trailing whitespace
+*.yml text eol=lf whitespace=-trailing-space
+*.yaml text eol=lf whitespace=-trailing-space
+*.json text eol=lf whitespace=-trailing-space
+*.toml text eol=lf whitespace=-trailing-space
+
+# Shell scripts — LF, executable
+*.sh text eol=lf
+*.bash text eol=lf
+*.fish text eol=lf
+
+# Batch files on Windows
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Makefile — tabs required
+Makefile text eol=lf whitespace=trailing-space
+
+# Generated files — exclude from diff
+docs/_generated/** linguist-generated=true
+tests/coverage_html/** linguist-generated=true
+
+# Export ignore — exclude from `git archive`
+.gitattributes export-ignore
+.gitignore export-ignore
+.github/ export-ignore
+tests/ export-ignore
+docs/adr/ export-ignore
+
+# Linguist language overrides
+*.editorconfig linguist-detectable=false
+*.gitignore linguist-detectable=false
