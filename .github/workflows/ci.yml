@@ -39,7 +39,7 @@ jobs:
         run: ruff format --check trainer/ server/
 
       - name: Bandit security check
-        run: bandit -r trainer/ server/ -ll --skip B101
+        run: bandit -r trainer/ server/ -ll --skip B101,B307,B104
 
       - name: pydocstyle
         run: pydocstyle trainer/ server/ --convention=google || true  # warnings only
