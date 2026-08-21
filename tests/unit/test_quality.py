@@ -11,8 +11,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from fastapi.testclient import TestClient
 import pytest
+
+try:
+    from fastapi.testclient import TestClient
+    HAS_FASTAPI = True
+except ImportError:
+    HAS_FASTAPI = False
 
 # =============================================================================
 # Helpers
@@ -83,6 +88,7 @@ def _make_mock_convert_result():
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_FASTAPI, reason="fastapi not installed")
 class TestDataAnalyze:
     """Tests for POST /api/data/analyze."""
 
@@ -179,6 +185,7 @@ class TestDataAnalyze:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_FASTAPI, reason="fastapi not installed")
 class TestDataAugment:
     """Tests for POST /api/data/augment."""
 
@@ -265,6 +272,7 @@ class TestDataAugment:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_FASTAPI, reason="fastapi not installed")
 class TestDataOptimize:
     """Tests for POST /api/data/optimize."""
 
@@ -351,6 +359,7 @@ class TestDataOptimize:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_FASTAPI, reason="fastapi not installed")
 class TestDataHallucinationCheck:
     """Tests for POST /api/data/hallucination-check."""
 
@@ -436,6 +445,7 @@ class TestDataHallucinationCheck:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_FASTAPI, reason="fastapi not installed")
 class TestDataConvert:
     """Tests for POST /api/data/convert."""
 
