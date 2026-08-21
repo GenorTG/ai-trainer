@@ -1,118 +1,101 @@
-# AI Trainer — Trainer, Hoster, and Benchmarker for Chris AI
+# 🧠 AI Trainer
 
-> A unified Python project for training, hosting, and benchmarking fine-tuned
-> language models. Primary home: **fan-dragon** (RTX 3090, 24GB).
-> Production runtime mirror: **genorbox1** (GTX 1070, 8GB).
+Fine-tuning, inference, and benchmarking toolkit for Gemma/Phi language models.
 
-## What It Does
+[![CI](https://github.com/GenorTG/ai-trainer/actions/workflows/ci.yml/badge.svg)](https://github.com/GenorTG/ai-trainer/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-| Component | Path | Purpose |
-|-----------|------|---------|
-| **Trainer** | `trainer/` | Fine-tune models with WebUI, CLI, RAG, benchmarks, tool-calling |
-| **Server** | `server/` | OpenAI-compatible inference server with RAG, MCP, samplers |
-| **Data** | `data/` | Training data generation scripts (persona + general knowledge) |
-| **Tests** | `tests/` | DRY test suite (573 tests, 64% coverage, cross-machine) |
+## Features
 
-## Status
+- **Fine-tuning Studio** — WebUI + CLI for training Gemma/Phi models with LoRA/QLoRA
+- **Inference Server** — OpenAI-compatible API with RAG, tool calling, and MCP support
+- **Benchmark Suite** — Real HuggingFace datasets for tool calling, persona, and reasoning
+- **Knowledge Preservation** — 97/3 data mixing to prevent catastrophic forgetting
+- **Native Jinja Templates** — Model-specific tool-call formatting for 90%+ accuracy
 
-- ✅ **Chris AI v20** trained, exported, deployed to genorbox1, live in production
-- ✅ **Chris AI v21** with knowledge preservation (97% persona + 3% general)
-- ✅ **Tool-calling**: 90% (9/10) with native Gemma4 Jinja template
-- ✅ **Benchmarks**: MMLU, HellaSwag, ARC, TruthfulQA, GSM8K, Winogrande
-- ✅ **Production**: NPM proxy at `ai.smart-samurai.pl` → genorbox1 llama.cpp
-
-## Quickstart
+## Quick Start
 
 ```bash
-# Setup (fan-dragon, RTX 3090)
-python3 -m venv ~/ai-trainer/.venv
-source ~/ai-trainer/.venv/bin/activate
-cd ~/ai-trainer/trainer && pip install -e .
-cd ~/ai-trainer/server && pip install -e .
-pip install pytest pytest-asyncio pytest-mock pytest-cov ruff mypy
+git clone https://github.com/GenorTG/ai-trainer.git
+cd ai-trainer
 
-# Run all checks
-cd ~/ai-trainer
-python tests/run_all.py --coverage
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate   # Windows
 
-# Start the trainer WebUI
-fts webui  # port 7860
+# Install packages
+pip install -e trainer/ server/
 
-# Start the inference server (with v21 GGUF)
-inference-server serve --model models/gemma-4-e4b-it.Q4_K_M.gguf
+# Run tests
+make test
+
+# Start inference server
+cd server
+llama-server -m ../models/your-model.gguf --host 0.0.0.0 --port 8080 -ngl 99 -c 8192 --jinja
+python -m inference_server.server  # OpenAI-compatible proxy on port 5000
 ```
 
-## Architecture
+## Project Structure
 
 ```
 ai-trainer/
-├── trainer/                    # = old finetune-studio
-│   ├── pyproject.toml           # 'finetune-studio' Python package
-│   └── src/finetune_studio/    # WebUI + CLI + training engine
-├── server/                     # = old inference-server
-│   ├── pyproject.toml          # 'inference-server' Python package
-│   └── inference_server/       # OpenAI-compatible API + RAG + MCP
-├── data/                       # training data generation scripts
-├── tests/                      # DRY test suite (573 tests)
-│   ├── unit/                   # 416
-│   ├── api/                    # 187
-│   └── frontend/               # 105
-├── docs/                       # per-module documentation
-├── models/                     # gitignored model artifacts
-└── tools/                      # build / lint / check scripts
+├── trainer/              # Fine-tuning studio (WebUI + CLI)
+│   └── src/finetune_studio/
+│       ├── training/     # Engine, data quality, config optimizer
+│       ├── benchmarks/   # Tool calling, scoring, samplers
+│       ├── compare/      # Model comparison engine
+│       ├── rag/          # Retrieval-augmented generation
+│       └── webui/        # FastAPI WebUI
+├── server/               # Inference server
+│   └── inference_server/
+│       ├── templates/    # Native Jinja template renderer
+│       ├── tools.py      # Tool definitions + RAG tools
+│       ├── parser.py     # Multi-format tool-call parser
+│       └── agent.py      # Agentic loop with tool execution
+├── tests/                # 806 tests, 60% coverage
+├── docs/                 # ADRs, development guide, troubleshooting
+└── tools/                # deploy.sh, bump.py, check-secrets.sh
 ```
+
+## Branches
+
+| Branch | Purpose | Protection |
+|--------|---------|------------|
+| `main` | Stable releases | PR required, stale reviews dismissed |
+| `dev` | Active development | Direct push |
 
 ## Development
 
 ```bash
-# Run tests
-python tests/run_all.py                        # all 573 tests
-python tests/run_all.py --suite unit           # unit only
-python tests/run_all.py --suite api            # API only
-python tests/run_all.py --suite frontend       # frontend only
-python tests/run_all.py --coverage             # with coverage report
+# Install dev dependencies
+pip install -e "trainer/[dev]" -e "server/[dev]"
 
-# Lint
-ruff check trainer/ server/                    # PEP 8 + extras
-mypy trainer/src server/inference_server       # type check
+# Run full test suite
+make test
 
-# Pre-commit hooks (auto-fixes on commit)
-pre-commit run --all-files
+# Run linter
+make lint
+
+# Run type checker
+make type-check
+
+# All checks at once
+make all-checks
 ```
 
-## Deployment
+## Documentation
 
-### Production (genorbox1)
-
-```bash
-# Pull latest on genorbox1
-cd /home/genorbox1/llama-server
-./sync-from-fan-dragon.sh                       # rsync scripts
-./restart-llama.sh                              # bounce the service
-```
-
-### Development (fan-dragon)
-
-```bash
-# Just run from the source tree
-source ~/ai-trainer/.venv/bin/activate
-fts webui                                       # training WebUI
-inference-server serve --model models/v21.gguf  # inference server
-```
-
-## Conventions
-- [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
-- [Semantic Versioning](https://semver.org/) for releases
-- Type hints everywhere (mypy strict-compatible)
-- Test coverage target: ≥80% for new code
-
-## Related Projects
-- **Spice** (NSFW content agent) — separate, uses same inference server
-- **Krzy-Kut Company Website** — consumer of inference server via `ai.smart-samurai.pl`
+- [Architecture](ARCHITECTURE.md) — System diagrams and data flow
+- [API Reference](API.md) — Full HTTP API documentation
+- [Development Guide](docs/DEVELOPMENT.md) — Setup and workflow
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common issues and fixes
+- [Architecture Decision Records](docs/adr/) — Key design decisions
 
 ## License
-Internal use only. Proprietary.
 
-## Contact
-- **Owner**: Chris (Master Genor) / Krzysztof Kutniowski
-- **Maintainer**: Amy (OpenClaw primary agent)
+MIT — see [LICENSE](LICENSE) for details.
+
+Gemma models are subject to [Google's Terms of Use](https://ai.google.dev/gemma/terms).
+Phi-4 is licensed under [MIT](https://huggingface.co/microsoft/phi-4/blob/main/LICENSE).
