@@ -234,6 +234,7 @@ class TestCmdConvert:
 # =============================================================================
 
 
+@pytest.mark.slow  # needs finetune_studio.models (editable install)
 class TestCmdModels:
     """Tests for the models subcommand."""
 

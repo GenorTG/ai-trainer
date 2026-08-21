@@ -74,7 +74,7 @@ class ComparisonEngine:
         response = requests.post(
             source.api_url,
             headers=headers,
-            json=payload,  # type: ignore[arg-type]
+            json=payload,
             timeout=self.config.timeout,
         )
         response.raise_for_status()
