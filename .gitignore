@@ -159,4 +159,4 @@ debug_*.py
 
 # OS temp files
 *.tmp
-*~
+*~data/*.jsonl
