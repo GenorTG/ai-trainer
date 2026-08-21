@@ -44,7 +44,7 @@ class VectorStore:
         self.store_path = store_path
         self._client = None
         self._collection = None
-        self._embedder = None
+        self._embedder: object = None  # SentenceTransformer or None
 
     def _get_client(self):
         if self._client is None:

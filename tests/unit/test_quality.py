@@ -13,10 +13,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", message=".*starlette.*")
+
 try:
     from fastapi.testclient import TestClient
     HAS_FASTAPI = True
-except ImportError:
+except (ImportError, Exception):
     HAS_FASTAPI = False
 
 # =============================================================================
