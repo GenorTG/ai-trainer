@@ -349,6 +349,7 @@ class TestCmdRag:
 # =============================================================================
 
 
+@pytest.mark.slow  # needs torch (training.engine)
 class TestCmdSuite:
     """Tests for suite subcommand error paths."""
 
@@ -383,6 +384,7 @@ class TestCmdSuite:
 # =============================================================================
 
 
+@pytest.mark.slow  # needs torch (benchmarks)
 class TestCmdBenchmark:
     """Tests for benchmark subcommand error paths."""
 

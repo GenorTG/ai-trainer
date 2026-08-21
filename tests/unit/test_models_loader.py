@@ -1,8 +1,10 @@
+import pytest
 """Tests for finetune_studio.models.loader module."""
 import json
 from unittest.mock import MagicMock, patch
 
 
+@pytest.mark.slow  # needs sentence-transformers
 class TestLoadModelInfo:
     """Tests for load_model_info function."""
 
@@ -69,6 +71,7 @@ class TestLoadModelInfo:
         assert "format" not in info
 
 
+@pytest.mark.slow  # needs torch + llama-cpp
 class TestLoadForInference:
     """Tests for load_for_inference function (mocked)."""
 
@@ -122,6 +125,7 @@ class TestLoadForInference:
             mock_load.assert_called_once_with(str(p), n_ctx=2048, n_gpu_layers=0)
 
 
+@pytest.mark.slow  # needs llama-cpp
 class TestLoadGgufInference:
     """Tests for load_gguf_inference function (mocked)."""
 

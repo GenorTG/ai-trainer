@@ -336,6 +336,7 @@ class TestModelSource:
         assert ms.api_url == "https://api.example.com"
 
 
+@pytest.mark.slow  # needs requests + comparison engine
 class TestComparisonEngine:
     """Tests for ComparisonEngine class."""
 
