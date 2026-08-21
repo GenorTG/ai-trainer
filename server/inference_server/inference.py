@@ -32,12 +32,11 @@ KEY CONCEPTS
 # ─── IMPORTS ─────────────────────────────────────────────────────────────
 # time: Python's built-in module for measuring elapsed time. We use it
 # to record how long generation took (useful for benchmarking).
-import time
-
 # Path: represents a filesystem path. More convenient than raw strings
 # for path operations like checking if a file exists or getting the
 # file extension.
 from pathlib import Path
+import time
 
 
 # ═════════════════════════════════════════════════════════════════════════

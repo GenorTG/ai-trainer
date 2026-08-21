@@ -5,11 +5,11 @@ Covers build_tools() and execute_tool() with full mock-based coverage.
 from __future__ import annotations
 
 import json
-import pytest
 from unittest.mock import MagicMock, patch
 
-from inference_server.tools import build_tools, execute_tool
+import pytest
 
+from inference_server.tools import build_tools, execute_tool
 
 # =============================================================================
 # build_tools tests
@@ -205,7 +205,7 @@ class TestExecuteToolRagIngest:
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test\nContent here")
 
-        with patch("inference_server.tools.DocumentIngestor") as MockIngestor:
+        with patch("inference_server.rag.DocumentIngestor") as MockIngestor:
             mock_ingestor_instance = MagicMock()
             mock_ingestor_instance.ingest_file.return_value = {
                 "document_id": "abc123",
@@ -229,7 +229,7 @@ class TestExecuteToolRagIngest:
         test_file = tmp_path / "test.md"
         test_file.write_text("Content")
 
-        with patch("inference_server.tools.DocumentIngestor") as MockIngestor:
+        with patch("inference_server.rag.DocumentIngestor") as MockIngestor:
             mock_ingestor_instance = MagicMock()
             mock_ingestor_instance.ingest_file.return_value = {"document_id": "x"}
             MockIngestor.return_value = mock_ingestor_instance
@@ -308,7 +308,6 @@ class TestExecuteToolParseDocument:
 
     def test_parse_document_returns_text(self, tmp_path):
         """parse_document tool returns parsed text content."""
-        from inference_server.parsers import parse_document as real_parse
 
         test_file = tmp_path / "test.md"
         test_file.write_text("# Title\n\nBody text here")
@@ -401,8 +400,9 @@ class TestExecuteToolSaveConversationKnowledge:
             embedding_model="custom-emb",
         )
 
-        call_kwargs = rag_store.add_document.call_args.kwargs
-        assert call_kwargs["embedding_model"] == "custom-emb"
+        call_args = rag_store.add_document.call_args
+        # Positional: (doc_id, chunks, embedding_model)
+        assert call_args.args[2] == "custom-emb"
 
     def test_save_knowledge_short_content_one_chunk(self):
         """Content < 200 words = 1 chunk."""

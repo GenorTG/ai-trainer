@@ -17,11 +17,11 @@ KEY CONCEPTS
 """
 
 """Portable Inference Server v2 — with tool calling, samplers, MCP, and RAG."""
+from contextlib import asynccontextmanager
 import json
 import os
-import time
-from contextlib import asynccontextmanager
 from pathlib import Path
+import time
 
 import aiofiles
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile

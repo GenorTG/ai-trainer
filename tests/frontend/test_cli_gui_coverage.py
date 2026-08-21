@@ -15,8 +15,8 @@ FAILS with a clear message indicating what needs to be implemented.
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
+import re
 
 import pytest
 

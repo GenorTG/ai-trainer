@@ -4,12 +4,9 @@ Covers: engine.py, data_quality.py, data_augmentation.py,
         hallucination_guard.py, knowledge_preservation.py, config_optimizer.py.
 """
 import json
-import os
-from pathlib import Path
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ══════════════════════════════════════════════════════════════
 # engine.py tests
@@ -115,7 +112,7 @@ class TestTrainingEngine:
 
     def test_start_sets_loading(self):
         """start() sets status to loading and starts thread."""
-        from finetune_studio.training.engine import TrainingEngine, TrainingConfig
+        from finetune_studio.training.engine import TrainingConfig, TrainingEngine
         engine = TrainingEngine()
         mock_thread = MagicMock()
         with patch("finetune_studio.training.engine.threading.Thread", return_value=mock_thread):
@@ -125,7 +122,7 @@ class TestTrainingEngine:
 
     def test_start_raises_if_already_training(self):
         """start() raises RuntimeError if already training."""
-        from finetune_studio.training.engine import TrainingEngine, TrainingState, TrainingConfig
+        from finetune_studio.training.engine import TrainingConfig, TrainingEngine, TrainingState
         engine = TrainingEngine()
         engine.state = TrainingState(status="training")
         with pytest.raises(RuntimeError, match="already in progress"):
@@ -141,7 +138,7 @@ class TestTrainingEngine:
 
     def test_train_error_handling(self):
         """_train catches exceptions and sets error state."""
-        from finetune_studio.training.engine import TrainingEngine, TrainingConfig
+        from finetune_studio.training.engine import TrainingConfig, TrainingEngine
         engine = TrainingEngine()
         with patch("finetune_studio.training.engine.TrainingEngine._train_unsloth", side_effect=RuntimeError("GPU OOM")):
             engine.config = TrainingConfig(unsloth=True)
@@ -586,7 +583,10 @@ class TestTrainingConfigOptimizer:
 
     def test_generate_report(self):
         """generate_report produces formatted output."""
-        from finetune_studio.training.config_optimizer import TrainingConfigOptimizer, TrainingRecommendation
+        from finetune_studio.training.config_optimizer import (
+            TrainingConfigOptimizer,
+            TrainingRecommendation,
+        )
         opt = TrainingConfigOptimizer()
         recs = [
             TrainingRecommendation("lr", "8e-5", "3e-5", "Small dataset", "high"),

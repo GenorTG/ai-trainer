@@ -15,9 +15,9 @@ KEY CONCEPTS
 - Aggregate metrics: overall pass rate, average time per test.
 """
 
+from dataclasses import dataclass, field
 import json
 import time
-from dataclasses import dataclass, field
 
 
 @dataclass

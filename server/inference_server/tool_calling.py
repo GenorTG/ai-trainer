@@ -17,9 +17,9 @@ KEY CONCEPTS
   X, then save a note" — used to measure tool-call accuracy.
 """
 
+from dataclasses import dataclass, field
 import json
 import re
-from dataclasses import dataclass, field
 
 
 @dataclass

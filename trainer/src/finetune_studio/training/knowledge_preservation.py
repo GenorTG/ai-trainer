@@ -21,8 +21,8 @@ KEY CONCEPTS
 """
 
 """Knowledge preservation techniques — prevent catastrophic forgetting during fine-tuning."""
-import random
 from collections import defaultdict
+import random
 
 
 class KnowledgePreserver:

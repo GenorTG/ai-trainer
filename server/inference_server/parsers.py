@@ -22,18 +22,18 @@ KEY CONCEPTS
 import csv
 import json
 import os
-import xml.etree.ElementTree as ET
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 # ── Plain text / code / data ──
 
 def parse_text(path: Path) -> str:
-    with open(path, "r", encoding="utf-8", errors="replace") as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         return f.read()
 
 
 def parse_csv(path: Path) -> str:
-    with open(path, "r", encoding="utf-8", errors="replace") as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
         rows = list(reader)
     if not rows:
@@ -48,14 +48,14 @@ def parse_csv(path: Path) -> str:
 
 
 def parse_json(path: Path) -> str:
-    with open(path, "r", encoding="utf-8", errors="replace") as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         data = json.load(f)
     return json.dumps(data, indent=2, ensure_ascii=False)
 
 
 def parse_jsonl(path: Path) -> str:
     parts = []
-    with open(path, "r", encoding="utf-8", errors="replace") as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         for line in f:
             line = line.strip()
             if line:
@@ -79,7 +79,7 @@ def parse_xml(path: Path) -> str:
 def parse_html(path: Path) -> str:
     try:
         from bs4 import BeautifulSoup
-        with open(path, "r", encoding="utf-8", errors="replace") as f:
+        with open(path, encoding="utf-8", errors="replace") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
         for tag in soup(["script", "style", "nav", "footer", "header"]):
             tag.decompose()
@@ -260,7 +260,7 @@ def parse_odt(path: Path) -> str:
 def parse_rtf(path: Path) -> str:
     try:
         from striprtf.striprtf import rtf_to_text
-        with open(path, "r", encoding="utf-8", errors="replace") as f:
+        with open(path, encoding="utf-8", errors="replace") as f:
             return rtf_to_text(f.read())
     except ImportError:
         # Minimal RTF strip fallback

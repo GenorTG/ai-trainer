@@ -2,13 +2,10 @@
 
 Covers: store.py, ingest.py, manager.py, query.py.
 """
-import os
 import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ══════════════════════════════════════════════════════════════
 # ingest.py tests
@@ -121,7 +118,7 @@ class TestDocumentDataclass:
 
     def test_document_with_data(self):
         """Document stores provided data."""
-        from finetune_studio.rag.ingest import Document, Chunk
+        from finetune_studio.rag.ingest import Chunk, Document
         c = Chunk(text="hello", chunk_index=0)
         d = Document(id="abc", filename="test.txt", chunks=[c], chunk_count=1)
         assert d.id == "abc"
@@ -240,8 +237,8 @@ class TestVectorStore:
 
     def test_add_chunks(self):
         """add_chunks embeds and stores chunks."""
-        from finetune_studio.rag.store import VectorStore
         from finetune_studio.rag.ingest import Chunk
+        from finetune_studio.rag.store import VectorStore
         mock_chromadb, mock_client, mock_collection = self._mock_chromadb()
         mock_embedder = MagicMock()
         mock_embedder.encode.return_value.tolist.return_value = [[0.1] * 384]
@@ -360,7 +357,7 @@ class TestRAGQuery:
 
     def test_retrieve_filters_by_min_score(self):
         """retrieve filters results below min_score."""
-        from finetune_studio.rag.query import RAGQuery, RAGConfig
+        from finetune_studio.rag.query import RAGConfig, RAGQuery
         mock_store = MagicMock()
         r1 = self._make_search_result("relevant", 0.8)
         r2 = self._make_search_result("irrelevant", 0.1)
@@ -404,7 +401,7 @@ class TestRAGQuery:
 
     def test_build_context_max_length(self):
         """build_context respects max_context_length."""
-        from finetune_studio.rag.query import RAGQuery, RAGConfig
+        from finetune_studio.rag.query import RAGConfig, RAGQuery
         mock_store = MagicMock()
         r1 = self._make_search_result("A" * 3000, 0.9)
         mock_store.search.return_value = [r1]

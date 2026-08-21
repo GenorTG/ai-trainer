@@ -15,10 +15,10 @@ Uses filesystem checks (no mock needed).
 from __future__ import annotations
 
 from pathlib import Path
-
 import re
 
 import pytest
+
 
 # Paths relative to this test file
 # Resolves layout differences between machines (genorbox1 vs fan-dragon).

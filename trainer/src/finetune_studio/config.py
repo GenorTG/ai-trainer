@@ -17,8 +17,8 @@ KEY CONCEPTS
 - Frozen dataclass: immutable config that can't be accidentally modified.
 """
 
-import os
 from dataclasses import dataclass, field
+import os
 
 
 @dataclass

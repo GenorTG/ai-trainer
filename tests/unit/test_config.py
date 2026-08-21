@@ -4,8 +4,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import pytest
-
 
 # Resolve finetune-studio source root across machine layouts.
 def _resolve_config_path() -> Path:

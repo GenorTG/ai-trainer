@@ -16,8 +16,8 @@ KEY CONCEPTS
 """
 
 """Chat template manager - extracts templates from GGUF and handles tool calling."""
-import json
 from dataclasses import dataclass
+import json
 from typing import Any
 
 from .renderer import extract_template_from_gguf, render_chat

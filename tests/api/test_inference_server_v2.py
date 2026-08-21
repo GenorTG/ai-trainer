@@ -13,7 +13,6 @@ import io
 
 import pytest
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 # POST /v1/chat/completions
 # ═══════════════════════════════════════════════════════════════════════════
@@ -83,6 +82,7 @@ def test_chat_completions_all_sampler_params(inference_server_v2_client):
 def test_chat_completions_no_model_loaded(mocker, mock_rag_store):
     """Returns 503 when no model is loaded."""
     from fastapi.testclient import TestClient
+
     from inference_server.server_v2 import app
 
     engine = mocker.MagicMock()
@@ -217,6 +217,7 @@ def test_rag_query(inference_server_v2_client):
 def test_rag_query_no_model_loaded(mocker, mock_rag_store):
     """Returns 503 when no model is loaded."""
     from fastapi.testclient import TestClient
+
     from inference_server.server_v2 import app
 
     engine = mocker.MagicMock()

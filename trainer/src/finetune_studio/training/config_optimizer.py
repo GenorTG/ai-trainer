@@ -213,3 +213,48 @@ class TrainingConfigOptimizer:
                     lines.append(f"    Reason: {rec.reason}")
 
         return "\n".join(lines)
+
+
+
+# Alias for backwards compatibility with routes that use ConfigOptimizer
+class ConfigOptimizer:
+    """Wrapper around TrainingConfigOptimizer that accepts a file path.
+
+    Reads a JSONL file and delegates to TrainingConfigOptimizer.analyze_and_recommend.
+    """
+
+    def __init__(self, path: str):
+        self.path = path
+        self._inner = TrainingConfigOptimizer()
+
+    def recommend(self) -> dict:
+        """Load JSONL from path and return recommendations as a dict."""
+        import json
+        from pathlib import Path
+
+        data_path = Path(self.path)
+        if not data_path.exists():
+            return {"error": f"File not found: {self.path}"}
+
+        # Load JSONL data
+        data = []
+        with open(data_path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    data.append(json.loads(line))
+
+        recommendations = self._inner.analyze_and_recommend(data)
+        # Convert list of recommendations to dict
+        return {
+            "recommendations": [
+                {
+                    "field": r.field,
+                    "current_value": str(r.current_value) if r.current_value else None,
+                    "recommended_value": str(r.recommended_value),
+                    "reason": r.reason,
+                }
+                for r in recommendations
+            ],
+            "total": len(recommendations),
+        }

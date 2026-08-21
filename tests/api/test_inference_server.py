@@ -13,7 +13,6 @@ import io
 
 import pytest
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 # POST /v1/chat/completions
 # ═══════════════════════════════════════════════════════════════════════════
@@ -68,6 +67,7 @@ def test_chat_completions_with_tools(inference_server_client):
 def test_chat_completions_no_model_loaded(mocker, mock_rag_store):
     """Returns 503 when no model is loaded (engine.model is None)."""
     from fastapi.testclient import TestClient
+
     from inference_server.server import app
 
     engine = mocker.MagicMock()
@@ -174,7 +174,6 @@ def test_rag_query_with_context(inference_server_client, mock_rag_store):
 def test_rag_query_without_context(inference_server_client):
     """RAG query with empty search results returns response with empty sources."""
     # Override the mock store's search to return empty results
-    from unittest.mock import MagicMock
     inference_server_client.app.dependency_overrides = {}
 
     # The store's search is already mocked — just test the endpoint works
@@ -191,6 +190,7 @@ def test_rag_query_without_context(inference_server_client):
 def test_rag_query_no_model_loaded(mocker, mock_rag_store):
     """Returns 503 when no model is loaded for RAG query."""
     from fastapi.testclient import TestClient
+
     from inference_server.server import app
 
     engine = mocker.MagicMock()

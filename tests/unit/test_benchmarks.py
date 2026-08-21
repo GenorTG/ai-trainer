@@ -2,11 +2,9 @@
 
 Covers: __init__.py, comparison.py, samplers.py, scoring.py, tool_calling.py, real_benchmarks.py.
 """
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ══════════════════════════════════════════════════════════════
 # scoring.py tests
@@ -135,7 +133,7 @@ class TestBenchmarkScorer:
         assert result["keyword_score"] == 1.0
 
     def test_scorer_singleton(self):
-        from finetune_studio.benchmarks.scoring import scorer, BenchmarkScorer
+        from finetune_studio.benchmarks.scoring import BenchmarkScorer, scorer
         assert isinstance(scorer, BenchmarkScorer)
 
 
@@ -497,7 +495,7 @@ class TestModelComparator:
         mock_engine.unload.assert_called()
 
     def test_comparator_singleton(self):
-        from finetune_studio.benchmarks.comparison import comparator, ModelComparator
+        from finetune_studio.benchmarks.comparison import ModelComparator, comparator
         assert isinstance(comparator, ModelComparator)
 
 
@@ -529,7 +527,7 @@ class TestToolCallEvaluator:
         assert evaluator.parse_tool_call("Just a normal response") is None
 
     def test_evaluate_tool_call_correct(self):
-        from finetune_studio.benchmarks.tool_calling import ToolCallEvaluator, ToolCall, AgenticTest
+        from finetune_studio.benchmarks.tool_calling import AgenticTest, ToolCall, ToolCallEvaluator
         evaluator = ToolCallEvaluator()
         tc = ToolCall(name="web_search", arguments={"query": "python"})
         test = AgenticTest(
@@ -540,7 +538,7 @@ class TestToolCallEvaluator:
         assert result["correct"] is True
 
     def test_evaluate_tool_call_wrong_tool(self):
-        from finetune_studio.benchmarks.tool_calling import ToolCallEvaluator, ToolCall, AgenticTest
+        from finetune_studio.benchmarks.tool_calling import AgenticTest, ToolCall, ToolCallEvaluator
         evaluator = ToolCallEvaluator()
         tc = ToolCall(name="calculator", arguments={})
         test = AgenticTest(
@@ -551,7 +549,7 @@ class TestToolCallEvaluator:
         assert result["correct"] is False
 
     def test_evaluate_tool_call_forbidden(self):
-        from finetune_studio.benchmarks.tool_calling import ToolCallEvaluator, ToolCall, AgenticTest
+        from finetune_studio.benchmarks.tool_calling import AgenticTest, ToolCall, ToolCallEvaluator
         evaluator = ToolCallEvaluator()
         tc = ToolCall(name="calculator", arguments={})
         test = AgenticTest(
@@ -562,7 +560,7 @@ class TestToolCallEvaluator:
         assert result["correct"] is False
 
     def test_evaluate_no_tool_expected_none_called(self):
-        from finetune_studio.benchmarks.tool_calling import ToolCallEvaluator, AgenticTest
+        from finetune_studio.benchmarks.tool_calling import AgenticTest, ToolCallEvaluator
         evaluator = ToolCallEvaluator()
         test = AgenticTest(
             name="test", description="d", system_prompt="s", user_message="m",
@@ -572,7 +570,7 @@ class TestToolCallEvaluator:
         assert result["correct"] is True
 
     def test_evaluate_tool_expected_none_called(self):
-        from finetune_studio.benchmarks.tool_calling import ToolCallEvaluator, AgenticTest
+        from finetune_studio.benchmarks.tool_calling import AgenticTest, ToolCallEvaluator
         evaluator = ToolCallEvaluator()
         test = AgenticTest(
             name="test", description="d", system_prompt="s", user_message="m",

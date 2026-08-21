@@ -20,9 +20,9 @@ KEY CONCEPTS
 """
 
 """Document ingestion — chunking and embedding for RAG."""
+from dataclasses import dataclass, field
 import hashlib
 import os
-from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -51,7 +51,7 @@ def extract_text(file_path: str) -> str:
     ext = path.suffix.lower()
 
     if ext in (".txt", ".md", ".csv", ".json", ".jsonl", ".py", ".js", ".ts", ".html", ".css"):
-        with open(path, "r", encoding="utf-8", errors="replace") as f:
+        with open(path, encoding="utf-8", errors="replace") as f:
             return f.read()
     elif ext == ".pdf":
         return extract_pdf(path)
@@ -60,7 +60,7 @@ def extract_text(file_path: str) -> str:
     else:
         # Try reading as text
         try:
-            with open(path, "r", encoding="utf-8", errors="replace") as f:
+            with open(path, encoding="utf-8", errors="replace") as f:
                 return f.read()
         except Exception:  # noqa: BLE001
             return ""

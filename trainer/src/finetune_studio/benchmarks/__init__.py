@@ -19,8 +19,8 @@ KEY CONCEPTS
 """
 
 """Industry-standard AI model benchmarks for Finetune Studio."""
-import time
 from dataclasses import dataclass, field
+import time
 
 
 @dataclass

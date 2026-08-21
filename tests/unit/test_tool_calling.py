@@ -123,7 +123,7 @@ class TestToolCallEvaluator:
     # ── evaluate_tool_call ──
 
     def test_evaluate_correct_tool(self, evaluator):
-        from inference_server.tool_calling import ToolCall, AgenticTest
+        from inference_server.tool_calling import AgenticTest, ToolCall
         tc = ToolCall(name="web_search", arguments={"q": "test"})
         test = AgenticTest(
             name="t", description="d", system_prompt="s", user_message="m",
@@ -133,7 +133,7 @@ class TestToolCallEvaluator:
         assert result["correct"] is True
 
     def test_evaluate_wrong_tool(self, evaluator):
-        from inference_server.tool_calling import ToolCall, AgenticTest
+        from inference_server.tool_calling import AgenticTest, ToolCall
         tc = ToolCall(name="calculator", arguments={})
         test = AgenticTest(
             name="t", description="d", system_prompt="s", user_message="m",
@@ -143,7 +143,7 @@ class TestToolCallEvaluator:
         assert result["correct"] is False
 
     def test_evaluate_forbidden_tool(self, evaluator):
-        from inference_server.tool_calling import ToolCall, AgenticTest
+        from inference_server.tool_calling import AgenticTest, ToolCall
         tc = ToolCall(name="calculator", arguments={})
         test = AgenticTest(
             name="t", description="d", system_prompt="s", user_message="m",
@@ -154,7 +154,7 @@ class TestToolCallEvaluator:
         assert result["correct"] is False
 
     def test_evaluate_no_tool_expected_but_called(self, evaluator):
-        from inference_server.tool_calling import ToolCall, AgenticTest
+        from inference_server.tool_calling import AgenticTest, ToolCall
         tc = ToolCall(name="web_search", arguments={})
         test = AgenticTest(
             name="t", description="d", system_prompt="s", user_message="m",

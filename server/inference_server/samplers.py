@@ -21,7 +21,7 @@ KEY CONCEPTS
 - Repeat penalty: penalize words that have already appeared, to
   discourage repetitive loops.
 - Min-p: alternative to top-p. Only consider words with probability
-  ≥ min_p × max_probability.
+  >= min_p * max_probability.
 """
 
 """Sampler options for inference — industry-standard parameters."""

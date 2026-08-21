@@ -1,8 +1,9 @@
 """Finetune Studio CLI — manage models, training, testing, RAG, and comparisons."""
 import argparse
 import json
-import sys
 import os
+import sys
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -197,9 +198,10 @@ def cmd_models(args):
 
 
 def cmd_train(args):
-    from finetune_studio.training.engine import TrainingEngine, TrainingConfig
-    from finetune_studio.training.data import load_jsonl
     import time
+
+    from finetune_studio.training.data import load_jsonl
+    from finetune_studio.training.engine import TrainingConfig, TrainingEngine
 
     if not os.path.exists(args.model):
         print(f"Error: Model not found: {args.model}")
@@ -329,8 +331,9 @@ def cmd_validate(args):
 
 
 def cmd_convert(args):
-    from finetune_studio.data.converter import jsonl_to_json, json_to_jsonl, csv_to_jsonl
     from pathlib import Path
+
+    from finetune_studio.data.converter import csv_to_jsonl, json_to_jsonl, jsonl_to_json
 
     src = Path(args.source)
     if not src.exists():
@@ -419,9 +422,9 @@ def cmd_rag(args):
 
 
 def cmd_compare(args):
-    from finetune_studio.compare.engine import ComparisonEngine, ModelSource, ComparisonConfig
+    from finetune_studio.compare.engine import ComparisonConfig, ComparisonEngine, ModelSource
+    from finetune_studio.compare.reporter import generate_json_report, generate_report
     from finetune_studio.compare.scorer import Scorer
-    from finetune_studio.compare.reporter import generate_report, generate_json_report
     from finetune_studio.testing.suite import load_test_suite
 
     if not os.path.exists(args.suite):
@@ -477,9 +480,10 @@ def cmd_compare(args):
 
 
 def cmd_benchmark(args):
-    from finetune_studio.testing.inference import InferenceEngine
-    from finetune_studio.benchmarks.real_benchmarks import RealBenchmarkSuite
     import json as json_mod
+
+    from finetune_studio.benchmarks.real_benchmarks import RealBenchmarkSuite
+    from finetune_studio.testing.inference import InferenceEngine
 
     if not os.path.exists(args.model):
         print(f"Error: Model not found: {args.model}")
@@ -498,7 +502,7 @@ def cmd_benchmark(args):
         benchmarks = [b.strip() for b in args.suite.split(",")]
 
     print(f"\nRunning {len(benchmarks)} benchmarks with {args.num_samples} samples each...")
-    print(f"This may take a while depending on model speed.\n")
+    print("This may take a while depending on model speed.\n")
 
     result = suite.run_all(
         engine,
@@ -508,7 +512,7 @@ def cmd_benchmark(args):
 
     # Print summary
     print(f"\n{'='*60}")
-    print(f"BENCHMARK RESULTS")
+    print("BENCHMARK RESULTS")
     print(f"{'='*60}")
     print(f"Model: {os.path.basename(args.model)}")
     print(f"Samples per benchmark: {args.num_samples}")
@@ -536,14 +540,15 @@ def cmd_benchmark(args):
 
 
 def cmd_analyze(args):
-    from finetune_studio.training.data_quality import DataQualityAnalyzer, generate_fixes
     import json as json_mod
+
+    from finetune_studio.training.data_quality import DataQualityAnalyzer, generate_fixes
 
     analyzer = DataQualityAnalyzer()
     result = analyzer.analyze(args.data)
 
     print(f"\n{'='*60}")
-    print(f"DATA QUALITY REPORT")
+    print("DATA QUALITY REPORT")
     print(f"{'='*60}")
     print(f"File: {result['file']}")
     print(f"Total examples: {result['total_examples']}")
@@ -576,9 +581,10 @@ def cmd_analyze(args):
 
 
 def cmd_augment(args):
+    import json as json_mod
+
     from finetune_studio.training.data_augmentation import DataAugmenter
     from finetune_studio.training.data_quality import DataQualityAnalyzer
-    import json as json_mod
 
     # Load existing data
     data = []
@@ -630,8 +636,9 @@ def cmd_augment(args):
 
 
 def cmd_optimize(args):
-    from finetune_studio.training.config_optimizer import TrainingConfigOptimizer
     import json as json_mod
+
+    from finetune_studio.training.config_optimizer import TrainingConfigOptimizer
 
     # Load data
     data = []
@@ -667,8 +674,9 @@ def cmd_optimize(args):
 
 
 def cmd_validate_hallucination(args):
-    from finetune_studio.training.hallucination_guard import TrainingDataValidator
     import json as json_mod
+
+    from finetune_studio.training.hallucination_guard import TrainingDataValidator
 
     # Load data
     data = []
@@ -695,9 +703,9 @@ def cmd_validate_hallucination(args):
 
 
 def cmd_rag_test(args):
-    from finetune_studio.testing.inference import InferenceEngine
+    from finetune_studio.rag.query import RAGConfig, RAGQuery
     from finetune_studio.rag.store import VectorStore
-    from finetune_studio.rag.query import RAGQuery, RAGConfig
+    from finetune_studio.testing.inference import InferenceEngine
 
     if not os.path.exists(args.model):
         print(f"Error: Model not found: {args.model}")

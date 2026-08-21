@@ -30,9 +30,9 @@ KEY CONCEPTS
 """
 
 """Real industry-standard benchmarks using HuggingFace datasets."""
+from dataclasses import dataclass
 import os
 import re
-from dataclasses import dataclass
 
 
 @dataclass
@@ -97,7 +97,7 @@ class RealBenchmarkSuite:
             answer_idx = item["answer"]
             expected = choices[answer_idx]
             subject = item["subject"]
-            
+
             # choices may be a string repr of a list
             raw_choices = item["choices"]
             if isinstance(raw_choices, str):

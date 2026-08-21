@@ -19,9 +19,8 @@ from __future__ import annotations
 import sys
 from unittest.mock import MagicMock
 
-import pytest
 from fastapi.testclient import TestClient
-
+import pytest
 
 # ── Session-wide heavy-resource mocks ─────────────────────────────────────
 # Some tests construct a fresh TestClient(app) without going through the
@@ -84,8 +83,9 @@ def inference_server_client(mocker, mock_engine, mock_rag_store):
     mocker.patch("inference_server.rag.RAGStore", return_value=mock_rag_store)
 
     from fastapi.testclient import TestClient
-    import inference_server.server as srv
+
     import inference_server.config as cfg_mod
+    import inference_server.server as srv
 
     # Same setup as v2: extra methods + ingestor + config.
     mock_rag_store.add_document = MagicMock(return_value=1)
@@ -126,8 +126,9 @@ def inference_server_v2_client(mocker, mock_engine, mock_rag_store):
     mocker.patch("inference_server.rag.RAGStore", return_value=mock_rag_store)
 
     from fastapi.testclient import TestClient
-    import inference_server.server_v2 as srv2
+
     import inference_server.config as cfg_mod
+    import inference_server.server_v2 as srv2
 
     # Add the methods server_v2 calls but conftest's mock_rag_store lacks.
     mock_rag_store.add_chunks = MagicMock(return_value=0)

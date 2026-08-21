@@ -17,10 +17,10 @@ KEY CONCEPTS
 """
 
 """Portable Inference Server with RAG — main server."""
-import os
-import time
 from contextlib import asynccontextmanager
+import os
 from pathlib import Path
+import time
 
 import aiofiles
 from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile

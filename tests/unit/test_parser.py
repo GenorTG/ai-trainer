@@ -9,15 +9,12 @@ Covers all 4+ parser formats:
 """
 from __future__ import annotations
 
-import pytest
-
 from inference_server.parser import (
     ToolCall,
-    parse_tool_call,
-    parse_multiple_tool_calls,
     _extract_json_args,
+    parse_multiple_tool_calls,
+    parse_tool_call,
 )
-
 
 # =============================================================================
 # ToolCall dataclass

@@ -47,8 +47,8 @@ def data_analyze(req: DataJobRequest) -> DataJobResponse:
         raise HTTPException(status_code=404, detail=f"File not found: {req.path}")
     try:
         from finetune_studio.training.data_quality import DataQualityAnalyzer
-        analyzer = DataQualityAnalyzer(req.path)
-        report = analyzer.analyze()
+        analyzer = DataQualityAnalyzer()
+        report = analyzer.analyze(req.path)
         return DataJobResponse(status="ok", command="analyze", path=req.path, result=report)
     except Exception as exc:  # noqa: BLE001 — route boundary must surface errors
         return DataJobResponse(status="error", command="analyze", path=req.path, error=str(exc))

@@ -18,8 +18,8 @@ KEY CONCEPTS
 """
 
 """Comparison engine — run same prompts through multiple models/APIs."""
-import time
 from dataclasses import dataclass
+import time
 
 import requests
 
@@ -134,3 +134,72 @@ class ComparisonEngine:
         for engine in self._local_engines.values():
             engine.unload()
         self._local_engines.clear()
+
+
+
+# Alias for backwards compatibility with routes that use FormatConverter
+class FormatConverter:
+    """Wrapper for converting training data between formats.
+
+    Supports: sharegpt, alpaca, chatml, openai
+    """
+
+    def __init__(self, source: str, target_format: str = "sharegpt", output: str | None = None):
+        self.source = source
+        self.target_format = target_format
+        self.output = output
+
+    def convert(self) -> dict:
+        """Convert JSONL from source format to target format."""
+        import json
+        from pathlib import Path
+
+        src_path = Path(self.source)
+        if not src_path.exists():
+            return {"error": f"File not found: {self.source}"}
+
+        # Load source data
+        examples = []
+        with open(src_path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    examples.append(json.loads(line))
+
+        # Convert based on target format
+        converted = []
+        for ex in examples:
+            if self.target_format == "sharegpt":
+                # Already in messages format
+                converted.append(ex)
+            elif self.target_format == "alpaca":
+                # Convert messages to alpaca format
+                messages = ex.get("messages", [])
+                if len(messages) >= 2:
+                    instruction = next((m["content"] for m in messages if m["role"] == "user"), "")
+                    response = next((m["content"] for m in messages if m["role"] == "assistant"), "")
+                    converted.append({"instruction": instruction, "input": "", "output": response})
+            elif self.target_format == "chatml":
+                # Convert to ChatML format
+                messages = ex.get("messages", [])
+                chatml = ""
+                for m in messages:
+                    chatml += f"<|im_start|>{m['role']}\n{m['content']}<|im_end|>\n"
+                converted.append({"text": chatml})
+            else:
+                # Unknown format - pass through
+                converted.append(ex)
+
+        # Write output if specified
+        if self.output:
+            output_path = Path(self.output)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, "w") as f:
+                for ex in converted:
+                    f.write(json.dumps(ex, ensure_ascii=False) + "\n")
+
+        return {
+            "converted": len(converted),
+            "target_format": self.target_format,
+            "output_path": self.output or str(src_path),
+        }

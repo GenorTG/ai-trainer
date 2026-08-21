@@ -19,9 +19,9 @@ KEY CONCEPTS
 """
 
 """MCP (Model Context Protocol) support for inference server."""
-import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
+import json
 
 
 @dataclass

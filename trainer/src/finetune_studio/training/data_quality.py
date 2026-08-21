@@ -20,9 +20,9 @@ KEY CONCEPTS
 """
 
 """Training data quality analyzer — detect and fix issues before training."""
+from collections import Counter
 import hashlib
 import json
-from collections import Counter
 
 
 class DataQualityAnalyzer:

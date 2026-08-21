@@ -115,7 +115,7 @@ class TestGetSampler:
         assert cfg.max_tokens == 256
 
     def test_get_unknown_returns_balanced(self):
-        from inference_server.samplers import get_sampler, SamplerConfig
+        from inference_server.samplers import SamplerConfig, get_sampler
         cfg = get_sampler("nonexistent_preset")
         assert cfg == SamplerConfig()  # balanced is the default
 
@@ -135,7 +135,7 @@ class TestGetSampler:
 @pytest.mark.unit
 class TestListPresets:
     def test_returns_all_presets(self):
-        from inference_server.samplers import list_presets, PRESETS
+        from inference_server.samplers import PRESETS, list_presets
         presets = list_presets()
         assert len(presets) == len(PRESETS)
         for name in PRESETS:
@@ -152,7 +152,7 @@ class TestListPresets:
             assert "min_p" in values
 
     def test_preset_values_match(self):
-        from inference_server.samplers import list_presets, PRESETS
+        from inference_server.samplers import PRESETS, list_presets
         presets = list_presets()
         for name, p in PRESETS.items():
             assert presets[name]["temperature"] == p.temperature

@@ -20,9 +20,9 @@ The regex patterns use pipe-question to handle both the opening (with pipe)
 and closing (without pipe) variants of pipes.
 """
 
+from dataclasses import dataclass
 import json
 import re
-from dataclasses import dataclass
 
 
 @dataclass
@@ -39,7 +39,7 @@ def _extract_json_args(text):
     except Exception:  # noqa: BLE001, S110
         pass
 
-    cleaned = text.replace('<|"|">', '"')
+    cleaned = text.replace('<|"|>', '"')
 
     try:
         return json.loads(cleaned)
@@ -105,7 +105,7 @@ def parse_tool_call(response):
         except Exception:  # noqa: BLE001, S110
             pass
 
-    match = re.search(r'<\|tool_call>\s*call:(\w+)\s*\{(.+?)\}\s*<tool_call\|>', text, re.DOTALL)
+    match = re.search(r'<\|tool_call\|>\s*call:(\w+)\s*\{(.+?)\}\s*<tool_call\|>', text, re.DOTALL)
     if match:
         name = match.group(1)
         args_str = match.group(2).strip()

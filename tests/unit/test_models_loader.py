@@ -1,10 +1,6 @@
 """Tests for finetune_studio.models.loader module."""
 import json
-import os
-from pathlib import Path
-from unittest.mock import patch, MagicMock
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 
 class TestLoadModelInfo:
@@ -109,7 +105,7 @@ class TestLoadForInference:
             "torch": mock_torch,
             "transformers": MagicMock(AutoModelForCausalLM=mock_auto, AutoTokenizer=mock_tok),
         }):
-            result = load_for_inference(str(d))
+            load_for_inference(str(d))
             mock_tok.from_pretrained.assert_called_once()
             mock_auto.from_pretrained.assert_called_once()
 

@@ -40,7 +40,7 @@ class TestTemplateManager:
         assert mgr.templates == {}
 
     def test_get_template_unknown(self):
-        from inference_server.templates.manager import TemplateManager, ChatTemplate
+        from inference_server.templates.manager import ChatTemplate, TemplateManager
         mgr = TemplateManager()
         t = mgr.get_template("nonexistent")
         assert isinstance(t, ChatTemplate)
@@ -169,14 +169,14 @@ class TestToolPromptBuilders:
         assert "Available tools" in result
 
     def test_build_tool_system_prompt_mistral(self):
-        from inference_server.templates.manager import TemplateManager, ChatTemplate
+        from inference_server.templates.manager import ChatTemplate, TemplateManager
         mgr = TemplateManager()
         mgr.templates["m"] = ChatTemplate(tool_format="mistral")
         result = mgr.build_tool_system_prompt("m")
         assert "[AVAILABLE_TOOLS]" in result
 
     def test_build_tool_system_prompt_gemma4(self):
-        from inference_server.templates.manager import TemplateManager, ChatTemplate
+        from inference_server.templates.manager import ChatTemplate, TemplateManager
         mgr = TemplateManager()
         mgr.templates["m"] = ChatTemplate(tool_format="gemma4")
         result = mgr.build_tool_system_prompt("m")

@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pytest
 
+
 # Where the templates live on disk
 # (Resolved at module load to work on both genorbox1 and fan-dragon layouts.)
 def _resolve_templates_dir() -> Path:
@@ -63,7 +64,7 @@ class TestPageRenders:
     """Verify each HTML page renders with correct status and content."""
 
     @pytest.mark.frontend
-    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=[p for p in PAGE_SPECS])
+    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=list(PAGE_SPECS))
     def test_page_renders(self, finetune_studio_client, path, spec):
         """Page returns 200 with text/html and contains expected keywords."""
         resp = finetune_studio_client.get(path)
@@ -78,7 +79,7 @@ class TestPageRenders:
         )
 
     @pytest.mark.frontend
-    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=[p for p in PAGE_SPECS])
+    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=list(PAGE_SPECS))
     def test_page_has_navigation(self, finetune_studio_client, path, spec):
         """Every page should contain the sidebar navigation with all 5 main links."""
         resp = finetune_studio_client.get(path)
@@ -96,7 +97,7 @@ class TestTemplateFiles:
     """Verify that the corresponding HTML template file exists on disk."""
 
     @pytest.mark.frontend
-    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=[p for p in PAGE_SPECS])
+    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=list(PAGE_SPECS))
     def test_has_template_files(self, path, spec):
         """Template file must exist in webui/templates/ — test FAILS if missing."""
         template_path = TEMPLATES_DIR / spec["template"]
@@ -116,7 +117,7 @@ class TestInteractiveElements:
     """Verify rendered HTML has interactive elements (buttons, forms, inputs)."""
 
     @pytest.mark.frontend
-    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=[p for p in PAGE_SPECS])
+    @pytest.mark.parametrize("path,spec", PAGE_SPECS.items(), ids=list(PAGE_SPECS))
     def test_has_interactive_elements(self, finetune_studio_client, path, spec):
         """Page must contain at least one <button>, <form>, or <input> element."""
         resp = finetune_studio_client.get(path)

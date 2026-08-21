@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
-
 
 # ── Module-level constants ──────────────────────────────────────────────
 SAMPLE_CSV = "name,age\nAlice,30\nBob,25"
@@ -192,8 +190,9 @@ class TestParsePptx:
 class TestParseOdt:
     def test_valid_odt(self, mocker, tmp_dir):
         """ODT parsing from a minimal zip with content.xml."""
-        from inference_server.parsers import parse_odt
         import zipfile
+
+        from inference_server.parsers import parse_odt
         p = tmp_dir / "doc.odt"
         with zipfile.ZipFile(p, "w") as z:
             z.writestr("content.xml", SAMPLE_ODT_ZIP_CONTENT)
@@ -223,8 +222,9 @@ class TestParseRtf:
 @pytest.mark.unit
 class TestParseEpub:
     def test_epub_from_zip(self, tmp_dir):
-        from inference_server.parsers import parse_epub
         import zipfile
+
+        from inference_server.parsers import parse_epub
         p = tmp_dir / "book.epub"
         html_content = "<html><body><p>Chapter 1 content</p></body></html>"
         with zipfile.ZipFile(p, "w") as z:

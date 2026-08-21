@@ -18,8 +18,8 @@ KEY CONCEPTS
 """
 
 """Comparison module for Finetune Studio — compare models side-by-side."""
-import time
 from dataclasses import dataclass
+import time
 
 
 @dataclass

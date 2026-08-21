@@ -2,12 +2,9 @@
 
 Covers: engine.py, scorer.py, reporter.py.
 """
-import os
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ══════════════════════════════════════════════════════════════
 # scorer.py tests
@@ -344,7 +341,7 @@ class TestComparisonEngine:
 
     def test_init(self):
         """ComparisonEngine initializes with config."""
-        from finetune_studio.compare.engine import ComparisonEngine, ComparisonConfig
+        from finetune_studio.compare.engine import ComparisonConfig, ComparisonEngine
         cfg = ComparisonConfig(max_tokens=256)
         ce = ComparisonEngine(config=cfg)
         assert ce.config.max_tokens == 256
@@ -406,7 +403,7 @@ class TestComparisonEngine:
 
     def test_run_comparison_multiple_runs(self):
         """run_comparison with runs_per_prompt > 1."""
-        from finetune_studio.compare.engine import ComparisonEngine, ComparisonConfig, ModelSource
+        from finetune_studio.compare.engine import ComparisonConfig, ComparisonEngine, ModelSource
         cfg = ComparisonConfig(runs_per_prompt=3)
         ce = ComparisonEngine(config=cfg)
         mock_engine = MagicMock()

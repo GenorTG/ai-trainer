@@ -19,8 +19,8 @@ KEY CONCEPTS
 """
 
 """Benchmark scoring module for Finetune Studio WebUI."""
-import re
 from dataclasses import dataclass, field
+import re
 
 
 @dataclass

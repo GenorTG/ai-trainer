@@ -23,8 +23,8 @@ KEY CONCEPTS
 """
 
 """RAG module — vector store and retrieval for portable server."""
-import os
 from dataclasses import dataclass
+import os
 from pathlib import Path
 
 
@@ -216,7 +216,7 @@ class DocumentIngestor:
         ext = path.suffix.lower()
 
         if ext in (".txt", ".md", ".csv", ".json", ".jsonl", ".py", ".js", ".ts", ".html", ".css"):
-            with open(path, "r", encoding="utf-8", errors="replace") as f:
+            with open(path, encoding="utf-8", errors="replace") as f:
                 return f.read()
         elif ext == ".pdf":
             return self._extract_pdf(path)
@@ -224,7 +224,7 @@ class DocumentIngestor:
             return self._extract_docx(path)
         else:
             try:
-                with open(path, "r", encoding="utf-8", errors="replace") as f:
+                with open(path, encoding="utf-8", errors="replace") as f:
                     return f.read()
             except Exception:  # noqa: BLE001
                 return ""

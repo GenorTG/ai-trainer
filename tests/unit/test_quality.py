@@ -9,10 +9,10 @@ Covers the 5 routes that expose CLI data commands via WebUI:
 """
 from __future__ import annotations
 
-import pytest
 from unittest.mock import MagicMock, patch
-from fastapi.testclient import TestClient
 
+from fastapi.testclient import TestClient
+import pytest
 
 # =============================================================================
 # Helpers
@@ -22,6 +22,7 @@ from fastapi.testclient import TestClient
 def _make_client():
     """Create FastAPI TestClient with quality router mounted."""
     from fastapi import FastAPI
+
     from finetune_studio.webui.routes.quality import router
 
     app = FastAPI()
@@ -475,7 +476,7 @@ class TestDataConvert:
             MockConverter.return_value = mock_instance
 
             # No target_format specified
-            response = client.post(
+            client.post(
                 "/api/data/convert",
                 json={"path": str(data_file)},
             )
@@ -497,7 +498,7 @@ class TestDataConvert:
             mock_instance.convert.return_value = {}
             MockConverter.return_value = mock_instance
 
-            response = client.post(
+            client.post(
                 "/api/data/convert",
                 json={"path": str(data_file), "target_format": "alpaca", "output": "data/alpaca.jsonl"},
             )

@@ -20,8 +20,8 @@ KEY CONCEPTS
 """
 
 """Hallucination guardrails — detect and prevent model hallucinations."""
-import re
 from dataclasses import dataclass, field
+import re
 
 
 @dataclass
@@ -174,3 +174,48 @@ class TrainingDataValidator:
         if ratio > 0.1:
             return "MODERATE risk — verify specific claims in responses"
         return "LOW risk — dataset looks clean"
+
+
+
+# Alias for backwards compatibility with routes that use HallucinationGuard
+class HallucinationGuard:
+    """Wrapper around HallucinationGuardrail that accepts a file path.
+
+    Reads a JSONL file and runs hallucination checks per example.
+    """
+
+    def __init__(self, path: str):
+        self.path = path
+        self._inner = HallucinationGuardrail()
+
+    def scan(self) -> dict:
+        """Scan JSONL for hallucination risk patterns."""
+        import json
+        from pathlib import Path
+
+        data_path = Path(self.path)
+        if not data_path.exists():
+            return {"error": f"File not found: {self.path}"}
+
+        # Load JSONL
+        examples = []
+        with open(data_path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    examples.append(json.loads(line))
+
+        # Run batch check (note: actual API may differ)
+        try:
+            result = self._inner.check_batch(examples)
+            return {
+                "scanned": len(examples),
+                "risk_count": getattr(result, "risk_count", 0) if result else 0,
+                "details": str(result) if result else "No issues",
+            }
+        except Exception as e:
+            return {
+                "scanned": len(examples),
+                "error": str(e),
+                "risk_count": 0,
+            }

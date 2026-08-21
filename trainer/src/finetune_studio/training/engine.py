@@ -22,10 +22,10 @@ KEY CONCEPTS
 - Progress notification: callbacks to update the UI as training progresses.
 """
 
+from dataclasses import dataclass, field
 import os
 import threading
 import time
-from dataclasses import dataclass, field
 
 
 @dataclass

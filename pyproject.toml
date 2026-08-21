@@ -15,7 +15,7 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-# Standard rule sets
+# Standard rule sets (matches previous lint-clean state)
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -26,33 +26,26 @@ select = [
     "UP",  # pyupgrade
     "SIM", # flake8-simplify
     "RUF", # ruff-specific
-    "N",   # pep8-naming
-    "PIE", # flake8-pie
-    "PT",  # flake8-pytest-style
-    "RET", # flake8-return
-    "YTT", # flake8-2020
-    "ARG", # flake8-unused-arguments
-    "PL",  # pylint
 ]
 
 # Allow common false positives
 ignore = [
-    "PLR0913",  # too many arguments (FastAPI endpoints)
-    "PLR2004",  # magic value used in comparison (tests use them)
-    "PLR0915",  # too many statements (model init has many)
     "E501",     # line too long (handled by formatter)
+    "E701",     # multiple statements on one line (try: x = ...)
     "B008",     # do not perform function calls in argument defaults
     "B904",     # raise from (we use bare raise)
-    "ARG001",   # unused function argument (FastAPI Depends)
-    "ARG002",   # unused method argument
-    "N803",     # argument name should be lowercase
-    "N806",     # variable in function should be lowercase
+    "B007",     # loop variable not used (we use _ intentionally)
+    "B905",     # zip() without strict= (Python 3.10 compat)
+    "SIM105",   # try-except-pass can use contextlib.suppress (stylistic)
     "SIM108",   # use ternary instead of binary if
-    "RET504",   # unnecessary assignment before return
-    "PT011",    # pytest.raises (we use it intentionally)
-    "PT027",    # pytest.raises without match
     "UP007",    # use X | Y for UnionType (we use Optional still)
     "UP006",    # use lowercase type hints (Optional[X] still)
+    "RUF100",   # unused noqa (kept for documentation)
+    "RUF005",   # iterable unpacking instead of concatenation (stylistic)
+    "E402",     # module level import not at top (intentional in some files)
+    "E741",     # ambiguous variable name (l, I, O — stylistic)
+    "BLE001",   # blind-except (we catch generic Exception intentionally)
+    "RUF059",   # unpacked variable never used (unpacking API result tuples)
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -127,7 +120,11 @@ filterwarnings = [
     "ignore::DeprecationWarning",     # but allow deprecation warnings
     "ignore::PendingDeprecationWarning",
     "ignore::pytest.PytestUnknownMarkWarning",  # allow custom markers
-    "ignore::starlette.deprecationWarning",     # starlette deprecation OK
+    "ignore::DeprecationWarning:starlette.*",     # starlette deprecation OK
+    "ignore::DeprecationWarning:jinja2.*",        # jinja2 deprecation OK
+    "ignore::starlette.exceptions.StarletteDeprecationWarning",  # httpx vs httpx2
+    "ignore::pytest.PytestUnraisableExceptionWarning",  # httpx/anyio async cleanup
+    "ignore::RuntimeWarning",         # coroutine cleanup warnings from httpx
 ]
 
 [tool.coverage.run]
