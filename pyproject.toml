@@ -96,6 +96,12 @@ ignore_errors = true
 module = ["finetune_studio.benchmarks.*"]
 disallow_untyped_defs = false
 
+[[tool.mypy.overrides]]
+# numpy 2.4+ uses Python 3.12 Type statement syntax;
+# ignore errors from numpy stubs when running on 3.10/3.11.
+module = ["numpy.*"]
+ignore_errors = true
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = [
