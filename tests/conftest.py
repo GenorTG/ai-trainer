@@ -55,8 +55,16 @@ import pytest
 
 # Ensure both packages are importable
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "inference-server"))
-sys.path.insert(0, str(ROOT / "finetune-studio" / "src"))
+
+# Support both ai-trainer and finetune-studio layouts
+_TRAINER_SRC = ROOT / "trainer" / "src"
+_SERVER_SRC = ROOT / "server"
+_FINETUNE_SRC = ROOT / "finetune-studio" / "src"
+_INFERENCE_SRC = ROOT / "inference-server"
+
+for p in [_TRAINER_SRC, _SERVER_SRC, _FINETUNE_SRC, _INFERENCE_SRC]:
+    if p.exists() and str(p) not in sys.path:
+        sys.path.insert(0, str(p))
 
 
 # ============================================================================

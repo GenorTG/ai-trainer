@@ -7,13 +7,18 @@ from pathlib import Path
 
 # Resolve finetune-studio source root across machine layouts.
 def _resolve_config_path() -> Path:
-    """Find finetune-studio config.py on disk (genorbox1 or fan-dragon)."""
+    """Find finetune_studio/config.py on disk (genorbox1, fan-dragon, or CI)."""
     here = Path(__file__).resolve()
     for ancestor in [here.parent, *here.parents]:
+        # ai-trainer layout (canonical)
+        candidate = ancestor / "trainer" / "src" / "finetune_studio" / "config.py"
+        if candidate.exists():
+            return candidate
+        # finetune-studio layout (legacy)
         candidate = ancestor / "finetune-studio" / "src" / "finetune_studio" / "config.py"
         if candidate.exists():
             return candidate
-    return here.parent.parent.parent / "finetune-studio" / "src" / "finetune_studio" / "config.py"
+    return here.parent.parent.parent / "trainer" / "src" / "finetune_studio" / "config.py"
 
 
 CONFIG_PATH = _resolve_config_path()

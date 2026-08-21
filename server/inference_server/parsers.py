@@ -111,8 +111,8 @@ def parse_pdf(path: Path) -> str:
 
     # Try PyPDF2
     try:
-        from PyPDF2 import PdfReader
-        reader = PdfReader(str(path))
+        from PyPDF2 import PdfReader as PdfReader2
+        reader = PdfReader2(str(path))
         pages = []
         for page in reader.pages:
             text = page.extract_text() or ""
