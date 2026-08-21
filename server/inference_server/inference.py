@@ -69,11 +69,11 @@ class InferenceEngine:
         until you call load() to bring a model into memory.
         """
         # Set all state to "empty" — no model loaded yet.
-        self.model = None           # The actual model object
-        self.tokenizer = None       # Tokenizer (HG only)
-        self.model_path = None      # Where the model files live
-        self.is_gguf = False        # Format detector
-        self.config = None          # Optional config object
+        self.model = None  # The actual model object
+        self.tokenizer = None  # Tokenizer (HG only)
+        self.model_path = None  # Where the model files live
+        self.is_gguf = False  # Format detector
+        self.config = None  # Optional config object
 
     def load(self, model_path: str, config=None):
         """Load a model from the given path.
@@ -206,6 +206,7 @@ class InferenceEngine:
         or for freeing memory when the engine is no longer needed.
         """
         import torch
+
         # Drop all references to the model objects. Python's garbage
         # collector will eventually free the memory, but we can be
         # more explicit by also clearing CUDA's cache.
@@ -219,9 +220,14 @@ class InferenceEngine:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-    def generate(self, messages: list, max_tokens: int = 1024,
-                 temperature: float = 0.7, top_p: float = 0.9,
-                 stop: list | None = None) -> dict:
+    def generate(
+        self,
+        messages: list,
+        max_tokens: int = 1024,
+        temperature: float = 0.7,
+        top_p: float = 0.9,
+        stop: list | None = None,
+    ) -> dict:
         """Generate a response from a list of messages.
 
         The main entry point for generating text. Takes a list of
@@ -339,7 +345,7 @@ class InferenceEngine:
         # ── Decode the output ──
         # outputs[0] is the full sequence (input + generated).
         # We slice off the input tokens to get just the generated part.
-        generated = outputs[0][inputs["input_ids"].shape[-1]:]
+        generated = outputs[0][inputs["input_ids"].shape[-1] :]
         # Decode the token IDs back to text, skipping special tokens like <|endoftext|>.
         return self.tokenizer.decode(generated, skip_special_tokens=True)
 

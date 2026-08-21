@@ -36,8 +36,14 @@ class AgenticLoop:
     4. Configurable max iterations
     """
 
-    def __init__(self, engine, rag_store=None, embedding_model: str = "all-MiniLM-L6-v2",
-                 custom_system_prompt: str | None = None, max_iterations: int = 5):
+    def __init__(
+        self,
+        engine,
+        rag_store=None,
+        embedding_model: str = "all-MiniLM-L6-v2",
+        custom_system_prompt: str | None = None,
+        max_iterations: int = 5,
+    ):
         self.engine = engine
         self.rag_store = rag_store
         self.embedding_model = embedding_model
@@ -54,8 +60,15 @@ class AgenticLoop:
             top_k = args.get("top_k", 5)
             if not self.rag_store:
                 return {"error": "RAG store not available"}
-            results = self.rag_store.search(query, top_k=top_k, embedding_model=self.embedding_model)
-            return {"results": [{"text": r.text[:500], "score": round(r.score, 3), "source": r.source} for r in results]}
+            results = self.rag_store.search(
+                query, top_k=top_k, embedding_model=self.embedding_model
+            )
+            return {
+                "results": [
+                    {"text": r.text[:500], "score": round(r.score, 3), "source": r.source}
+                    for r in results
+                ]
+            }
 
         def calculator(args):
             expr = args.get("expression", "")
@@ -72,12 +85,19 @@ class AgenticLoop:
             return {"saved": True, "content": content, "category": category}
 
         def web_search(args):
-            return {"query": args.get("query", ""), "results": [], "note": "Web search not configured"}
+            return {
+                "query": args.get("query", ""),
+                "results": [],
+                "note": "Web search not configured",
+            }
 
         def rag_list(args):
             if not self.rag_store:
                 return {"error": "RAG not available"}
-            return {"documents": self.rag_store.list_documents(), "total_chunks": self.rag_store.count()}
+            return {
+                "documents": self.rag_store.list_documents(),
+                "total_chunks": self.rag_store.count(),
+            }
 
         handlers["rag_search"] = rag_search
         handlers["calculator"] = calculator
@@ -100,6 +120,7 @@ class AgenticLoop:
     def _build_system_prompt(self) -> str:
         """Build system prompt with tool definitions."""
         from .tools import build_tools
+
         tools = build_tools(None)
 
         prompt = self.custom_system_prompt or "You are a helpful assistant with access to tools."
@@ -137,14 +158,16 @@ class AgenticLoop:
                 try:
                     tool_defs = []
                     for k in self._tool_handlers:
-                        tool_defs.append({
-                            "type": "function",
-                            "function": {
-                                "name": k,
-                                "description": "Tool",
-                                "parameters": {"type": "object", "properties": {}},
+                        tool_defs.append(
+                            {
+                                "type": "function",
+                                "function": {
+                                    "name": k,
+                                    "description": "Tool",
+                                    "parameters": {"type": "object", "properties": {}},
+                                },
                             }
-                        })
+                        )
                     result = self.engine.model.create_chat_completion(
                         messages=full_messages,
                         tools=tool_defs,
@@ -161,13 +184,16 @@ class AgenticLoop:
                         try:
                             tool_args = json.loads(fn.get("arguments", "{}"))
                         except Exception:  # noqa: BLE001
-
                             tool_args = {}
 
                         tool_result = self._execute_tool(tool_name, tool_args)
-                        tool_log.append({"tool": tool_name, "arguments": tool_args, "result": tool_result[:500]})
+                        tool_log.append(
+                            {"tool": tool_name, "arguments": tool_args, "result": tool_result[:500]}
+                        )
 
-                        work_messages.append({"role": "assistant", "content": msg.get("content", "")})
+                        work_messages.append(
+                            {"role": "assistant", "content": msg.get("content", "")}
+                        )
                         work_messages.append({"role": "tool", "content": tool_result})
                         continue
                     else:
@@ -176,7 +202,13 @@ class AgenticLoop:
                         tool_call = parse_tool_call(content)
                         if tool_call:
                             tool_result = self._execute_tool(tool_call.name, tool_call.arguments)
-                            tool_log.append({"tool": tool_call.name, "arguments": tool_call.arguments, "result": tool_result[:500]})
+                            tool_log.append(
+                                {
+                                    "tool": tool_call.name,
+                                    "arguments": tool_call.arguments,
+                                    "result": tool_result[:500],
+                                }
+                            )
                             work_messages.append({"role": "assistant", "content": content})
                             work_messages.append({"role": "tool", "content": tool_result})
                             continue
@@ -186,13 +218,21 @@ class AgenticLoop:
                     pass  # Fall through to manual mode
 
             # Manual tool calling
-            result = self.engine.generate(full_messages, max_tokens=max_tokens, temperature=temperature)
+            result = self.engine.generate(
+                full_messages, max_tokens=max_tokens, temperature=temperature
+            )
             content = result if isinstance(result, str) else result.get("response", str(result))
 
             tool_call = parse_tool_call(content)
             if tool_call:
                 tool_result = self._execute_tool(tool_call.name, tool_call.arguments)
-                tool_log.append({"tool": tool_call.name, "arguments": tool_call.arguments, "result": tool_result[:500]})
+                tool_log.append(
+                    {
+                        "tool": tool_call.name,
+                        "arguments": tool_call.arguments,
+                        "result": tool_result[:500],
+                    }
+                )
 
                 work_messages.append({"role": "assistant", "content": content})
                 work_messages.append({"role": "tool", "content": tool_result})

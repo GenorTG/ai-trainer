@@ -82,7 +82,9 @@ class TemplateManager:
             add_generation_prompt=add_generation_prompt,
         )
 
-    def build_tool_system_prompt(self, model_name: str | None = None, tools: list | None = None) -> str:
+    def build_tool_system_prompt(
+        self, model_name: str | None = None, tools: list | None = None
+    ) -> str:
         """Build system prompt with tool definitions."""
         if tools is None:
             tools = DEFAULT_TOOLS
@@ -131,17 +133,83 @@ def _detect_format(template_str: str) -> str:
 # ══════════════════════════════════════════════════════════════
 
 DEFAULT_TOOLS = [
-    {"type": "function", "function": {"name": "web_search", "description": "Search the web", "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}}},
-    {"type": "function", "function": {"name": "calculator", "description": "Calculate math", "parameters": {"type": "object", "properties": {"expression": {"type": "string"}}, "required": ["expression"]}}},
-    {"type": "function", "function": {"name": "file_read", "description": "Read a file", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}}},
-    {"type": "function", "function": {"name": "note_save", "description": "Save a note", "parameters": {"type": "object", "properties": {"content": {"type": "string"}, "category": {"type": "string"}}, "required": ["content"]}}},
-    {"type": "function", "function": {"name": "rag_search", "description": "Search knowledge base", "parameters": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}}, "required": ["query"]}}},
-    {"type": "function", "function": {"name": "weather_check", "description": "Check weather", "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}}},
+    {
+        "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": "Search the web",
+            "parameters": {
+                "type": "object",
+                "properties": {"query": {"type": "string"}},
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculator",
+            "description": "Calculate math",
+            "parameters": {
+                "type": "object",
+                "properties": {"expression": {"type": "string"}},
+                "required": ["expression"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "file_read",
+            "description": "Read a file",
+            "parameters": {
+                "type": "object",
+                "properties": {"path": {"type": "string"}},
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "note_save",
+            "description": "Save a note",
+            "parameters": {
+                "type": "object",
+                "properties": {"content": {"type": "string"}, "category": {"type": "string"}},
+                "required": ["content"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "rag_search",
+            "description": "Search knowledge base",
+            "parameters": {
+                "type": "object",
+                "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}},
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "weather_check",
+            "description": "Check weather",
+            "parameters": {
+                "type": "object",
+                "properties": {"city": {"type": "string"}},
+                "required": ["city"],
+            },
+        },
+    },
 ]
 
 
 def _build_generic_tool_prompt(tools: list) -> str:
-    prompt = 'You have access to these tools. When you need to use one, respond with ONLY a JSON object:\n'
+    prompt = "You have access to these tools. When you need to use one, respond with ONLY a JSON object:\n"
     prompt += '{"name": "tool_name", "arguments": {"arg": "value"}}\n\n'
     prompt += "Available tools:\n"
     for t in tools:

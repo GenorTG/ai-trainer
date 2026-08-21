@@ -25,6 +25,7 @@ class InferenceEngine:
 
     def load(self, model_path, device="auto"):
         from pathlib import Path
+
         self.unload()
         path = Path(model_path)
         if path.is_file() and path.suffix == ".gguf":
@@ -35,16 +36,21 @@ class InferenceEngine:
 
     def _load_hf(self, model_path, device):
         from transformers import AutoModelForCausalLM, AutoTokenizer
+
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_path, torch_dtype=torch.float16, device_map=device, trust_remote_code=True,
+            model_path,
+            torch_dtype=torch.float16,
+            device_map=device,
+            trust_remote_code=True,
         )
         self.is_gguf = False
 
     def _load_gguf(self, gguf_path):
         from llama_cpp import Llama
+
         self.model = Llama(model_path=gguf_path, n_ctx=4096, n_gpu_layers=99, verbose=False)
         self.tokenizer = None
         self.is_gguf = True
@@ -65,14 +71,20 @@ class InferenceEngine:
         return self._generate_hf(messages, max_tokens, temperature, top_p, stop)
 
     def _generate_hf(self, messages, max_tokens, temperature, top_p, stop):
-        text = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        text = self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
         inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
         with torch.no_grad():
             outputs = self.model.generate(
-                **inputs, max_new_tokens=max_tokens, temperature=max(temperature, 0.01),
-                top_p=top_p, do_sample=temperature > 0, pad_token_id=self.tokenizer.pad_token_id,
+                **inputs,
+                max_new_tokens=max_tokens,
+                temperature=max(temperature, 0.01),
+                top_p=top_p,
+                do_sample=temperature > 0,
+                pad_token_id=self.tokenizer.pad_token_id,
             )
-        generated = outputs[0][inputs["input_ids"].shape[-1]:]
+        generated = outputs[0][inputs["input_ids"].shape[-1] :]
         return self.tokenizer.decode(generated, skip_special_tokens=True)
 
     def _generate_gguf(self, messages, max_tokens, temperature, top_p, stop):
@@ -88,7 +100,10 @@ class InferenceEngine:
                 prompt += f"<|assistant|>\n{content}<|end|>\n"
         prompt += "<|assistant|>\n"
         output = self.model(
-            prompt, max_tokens=max_tokens, temperature=max(temperature, 0.01), top_p=top_p,
+            prompt,
+            max_tokens=max_tokens,
+            temperature=max(temperature, 0.01),
+            top_p=top_p,
             stop=["<|end|>", "<|user|>"] + (stop or []),
         )
         return output["choices"][0]["text"].strip()

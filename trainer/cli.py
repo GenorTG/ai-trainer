@@ -1,4 +1,5 @@
 """Finetune Studio CLI — manage models, training, and testing from the terminal."""
+
 import argparse
 import json
 import os
@@ -28,7 +29,9 @@ def main():
     p_train.add_argument("--lora-rank", type=int, default=64, help="LoRA rank")
     p_train.add_argument("--max-seq", type=int, default=2048, help="Max sequence length")
     p_train.add_argument("--system-prompt", default="", help="System prompt for all examples")
-    p_train.add_argument("--no-unsloth", action="store_true", help="Use standard transformers instead of Unsloth")
+    p_train.add_argument(
+        "--no-unsloth", action="store_true", help="Use standard transformers instead of Unsloth"
+    )
 
     # ── test ──
     p_test = sub.add_parser("test", help="Test a model interactively")
@@ -85,13 +88,25 @@ def main():
 def cmd_models(args):
     from finetune_studio.config import settings
     from finetune_studio.models.registry import scan_models
+
     dirs = settings.model_dirs + (args.dirs or [])
     models = scan_models(dirs)
     if args.json:
-        print(json.dumps([{
-            "name": m.name, "path": m.path, "format": m.format,
-            "size_gb": m.size_gb, "architecture": m.architecture,
-        } for m in models], indent=2))
+        print(
+            json.dumps(
+                [
+                    {
+                        "name": m.name,
+                        "path": m.path,
+                        "format": m.format,
+                        "size_gb": m.size_gb,
+                        "architecture": m.architecture,
+                    }
+                    for m in models
+                ],
+                indent=2,
+            )
+        )
     else:
         if not models:
             print("No models found.")
@@ -135,7 +150,9 @@ def cmd_train(args):
         if state.status == "training":
             pct = (state.current_step / max(state.total_steps, 1)) * 100
             bar = "█" * int(pct / 2) + "░" * (50 - int(pct / 2))
-            sys.stdout.write(f"\r\\r[{bar}] {pct:.0f}% | Step {state.current_step}/{state.total_steps} | Loss: {state.loss} | ETA: {state.eta}s")
+            sys.stdout.write(
+                f"\r\\r[{bar}] {pct:.0f}% | Step {state.current_step}/{state.total_steps} | Loss: {state.loss} | ETA: {state.eta}s"
+            )
             sys.stdout.flush()
         elif state.status == "done":
             print(f"\\n\\nTraining complete! Output: {args.output}")
@@ -210,14 +227,27 @@ def cmd_suite(args):
     scores = score_results(results)
 
     if args.json:
-        print(json.dumps({
-            "results": [{
-                "name": r.test_name, "passed": r.passed, "response": r.response,
-                "keyword_hits": r.keyword_hits, "keyword_misses": r.keyword_misses,
-                "forbidden_hits": r.forbidden_hits, "time_ms": r.time_ms, "error": r.error,
-            } for r in results],
-            "scores": scores,
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "results": [
+                        {
+                            "name": r.test_name,
+                            "passed": r.passed,
+                            "response": r.response,
+                            "keyword_hits": r.keyword_hits,
+                            "keyword_misses": r.keyword_misses,
+                            "forbidden_hits": r.forbidden_hits,
+                            "time_ms": r.time_ms,
+                            "error": r.error,
+                        }
+                        for r in results
+                    ],
+                    "scores": scores,
+                },
+                indent=2,
+            )
+        )
     else:
         for r in results:
             status = "PASS" if r.passed else "FAIL"
@@ -229,9 +259,11 @@ def cmd_suite(args):
                 print(f"   Missing: {', '.join(r.keyword_misses)}")
             elif r.forbidden_hits:
                 print(f"   Forbidden: {', '.join(r.forbidden_hits)}")
-            print(f"   {r.response[:120]}...\\n" if len(r.response) > 120 else f"   {r.response}\\n")
+            print(
+                f"   {r.response[:120]}...\\n" if len(r.response) > 120 else f"   {r.response}\\n"
+            )
 
-        print(f"\\n{'='*50}")
+        print(f"\\n{'=' * 50}")
         print(f"Pass rate: {scores['pass_rate']}% ({scores['passed']}/{scores['total']})")
         print(f"Avg time: {scores['avg_time_ms']}ms")
 
@@ -240,6 +272,7 @@ def cmd_suite(args):
 
 def cmd_validate(args):
     from finetune_studio.data.validator import validate_file
+
     for f in args.files:
         report = validate_file(f)
         icon = "✅" if report["valid"] else "❌"
@@ -279,6 +312,7 @@ def cmd_convert(args):
 
 def cmd_webui(args):
     import uvicorn
+
     uvicorn.run(
         "finetune_studio.webui.app:app",
         host=args.host,

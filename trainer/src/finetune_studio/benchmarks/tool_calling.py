@@ -62,7 +62,7 @@ class ToolCallEvaluator:
     def parse_tool_call(self, response: str) -> ToolCall | None:
         """Extract tool call from response using multiple formats."""
         # Format 1: <tool_call>{"name": "...", "arguments": {...}}</tool_call>
-        match = re.search(r'<tool_call>(.*?)</tool_call>', response, re.DOTALL)
+        match = re.search(r"<tool_call>(.*?)</tool_call>", response, re.DOTALL)
         if match:
             try:
                 data = json.loads(match.group(1).strip())
@@ -101,7 +101,9 @@ class ToolCallEvaluator:
 
         # Format 4: Qwen/Gemma4 native format - pipe-style tool calls
         # Pattern: ' + repr(p1) + r'call:NAME{args}<tool_call|>
-        match = re.search(r'<\|?tool_call\|?>call:(\w+)\{(.+?)\}<\|?tool_call\|?>', response, re.DOTALL)
+        match = re.search(
+            r"<\|?tool_call\|?>call:(\w+)\{(.+?)\}<\|?tool_call\|?>", response, re.DOTALL
+        )
         if match:
             name = match.group(1)
             args_str = match.group(2).strip()
@@ -111,9 +113,9 @@ class ToolCallEvaluator:
                 arguments[arg_match.group(1)] = arg_match.group(2)
             # If no <|"|"> delimited args found, try simpler key:value
             if not arguments:
-                for arg_match in re.finditer(r'(\w+):([^,}]+)', args_str):
+                for arg_match in re.finditer(r"(\w+):([^,}]+)", args_str):
                     val = arg_match.group(2).strip()
-                    if val and not val.startswith('<|'):
+                    if val and not val.startswith("<|"):
                         arguments[arg_match.group(1)] = val
             return ToolCall(name=name, arguments=arguments, raw=match.group(0))
 
@@ -177,48 +179,72 @@ TOOL_DEFINITIONS = [
         "function": {
             "name": "web_search",
             "description": "Search the web for information",
-            "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}
-        }
+            "parameters": {
+                "type": "object",
+                "properties": {"query": {"type": "string"}},
+                "required": ["query"],
+            },
+        },
     },
     {
         "type": "function",
         "function": {
             "name": "calculator",
             "description": "Calculate a math expression",
-            "parameters": {"type": "object", "properties": {"expression": {"type": "string"}}, "required": ["expression"]}
-        }
+            "parameters": {
+                "type": "object",
+                "properties": {"expression": {"type": "string"}},
+                "required": ["expression"],
+            },
+        },
     },
     {
         "type": "function",
         "function": {
             "name": "file_read",
             "description": "Read contents of a file",
-            "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}
-        }
+            "parameters": {
+                "type": "object",
+                "properties": {"path": {"type": "string"}},
+                "required": ["path"],
+            },
+        },
     },
     {
         "type": "function",
         "function": {
             "name": "note_save",
             "description": "Save a note to memory",
-            "parameters": {"type": "object", "properties": {"content": {"type": "string"}, "category": {"type": "string"}}, "required": ["content"]}
-        }
+            "parameters": {
+                "type": "object",
+                "properties": {"content": {"type": "string"}, "category": {"type": "string"}},
+                "required": ["content"],
+            },
+        },
     },
     {
         "type": "function",
         "function": {
             "name": "rag_search",
             "description": "Search the knowledge base for relevant information",
-            "parameters": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}}, "required": ["query"]}
-        }
+            "parameters": {
+                "type": "object",
+                "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}},
+                "required": ["query"],
+            },
+        },
     },
     {
         "type": "function",
         "function": {
             "name": "weather_check",
             "description": "Check weather for a location",
-            "parameters": {"type": "object", "properties": {"city": {"type": "string"}, "unit": {"type": "string"}}, "required": ["city"]}
-        }
+            "parameters": {
+                "type": "object",
+                "properties": {"city": {"type": "string"}, "unit": {"type": "string"}},
+                "required": ["city"],
+            },
+        },
     },
 ]
 
@@ -298,7 +324,14 @@ TOOL_CALL_TESTS = [
         system_prompt="You are a helpful assistant with access to tools.",
         user_message="Hello! How are you?",
         expected_tools=[],
-        forbidden_tools=["web_search", "calculator", "file_read", "note_save", "rag_search", "weather_check"],
+        forbidden_tools=[
+            "web_search",
+            "calculator",
+            "file_read",
+            "note_save",
+            "rag_search",
+            "weather_check",
+        ],
         category="no_tool",
     ),
     AgenticTest(

@@ -53,27 +53,29 @@ class BenchmarkScorer:
         response = response.strip()
 
         # Pattern 1: Direct letter at start
-        match = re.match(r'^([A-D])\b', response)
+        match = re.match(r"^([A-D])\b", response)
         if match:
             return match.group(1)
 
         # Pattern 2: Letter with delimiters
-        match = re.match(r'^([A-D])[\)\.\:\s]', response)
+        match = re.match(r"^([A-D])[\)\.\:\s]", response)
         if match:
             return match.group(1)
 
         # Pattern 3: "answer is X"
-        match = re.search(r'(?:the answer is|answer is|answer:?)\s*([A-D])', response, re.IGNORECASE)
+        match = re.search(
+            r"(?:the answer is|answer is|answer:?)\s*([A-D])", response, re.IGNORECASE
+        )
         if match:
             return match.group(1).upper()
 
         # Pattern 4: "X)" or "X." anywhere
-        match = re.search(r'\b([A-D])[\)\.]', response)
+        match = re.search(r"\b([A-D])[\)\.]", response)
         if match:
             return match.group(1).upper()
 
         # Pattern 5: Just the letter
-        match = re.search(r'\b([A-D])\b', response)
+        match = re.search(r"\b([A-D])\b", response)
         if match:
             return match.group(1).upper()
 
@@ -105,22 +107,22 @@ class BenchmarkScorer:
         # After #### marker
         if "####" in response:
             after = response.split("####")[-1].strip()
-            nums = re.findall(r'[-+]?\d+\.?\d*', after)
+            nums = re.findall(r"[-+]?\d+\.?\d*", after)
             if nums:
                 return nums[-1].replace(",", "")
 
         # Boxed answer
-        match = re.search(r'\\boxed\{([^}]+)\}', response)
+        match = re.search(r"\\boxed\{([^}]+)\}", response)
         if match:
             return match.group(1).replace(",", "")
 
         # "answer is X"
-        match = re.search(r'(?:answer is|=)\s*([-+]?\d+\.?\d*)', response, re.IGNORECASE)
+        match = re.search(r"(?:answer is|=)\s*([-+]?\d+\.?\d*)", response, re.IGNORECASE)
         if match:
             return match.group(1).replace(",", "")
 
         # Last number
-        nums = re.findall(r'[-+]?\d+\.?\d*', response)
+        nums = re.findall(r"[-+]?\d+\.?\d*", response)
         if nums:
             return nums[-1].replace(",", "")
 
@@ -165,7 +167,7 @@ class BenchmarkScorer:
         elif option2.lower() in response.lower():
             pred = "2"
         else:
-            match = re.search(r'\b(1|2)\b', response)
+            match = re.search(r"\b(1|2)\b", response)
             pred = match.group(1) if match else ""
 
         return {
@@ -173,8 +175,13 @@ class BenchmarkScorer:
             "method": "winogrande_extraction",
         }
 
-    def score_open_ended(self, response: str, reference: str, keywords: list | None = None,
-                         forbidden: list | None = None) -> dict:
+    def score_open_ended(
+        self,
+        response: str,
+        reference: str,
+        keywords: list | None = None,
+        forbidden: list | None = None,
+    ) -> dict:
         """Score open-ended response against reference."""
         response_lower = response.lower()
 

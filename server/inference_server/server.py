@@ -65,13 +65,16 @@ async def lifespan(app: FastAPI):
         # Auto-ingest documents on startup
         if os.path.exists(config.rag.documents_path):
             print(f"Ingesting documents from: {config.rag.documents_path}")
-            result = ingestor.ingest_directory(config.rag.documents_path, embedding_model=config.rag.embedding_model)
+            result = ingestor.ingest_directory(
+                config.rag.documents_path, embedding_model=config.rag.embedding_model
+            )
             print(f"Ingested {result['files_ingested']} files, {result['chunks_added']} chunks")
             if result["errors"]:
                 print(f"Errors: {len(result['errors'])}")
 
         # Setup agent
         from .agent import ToolCallingAgent
+
         agent = ToolCallingAgent(engine, rag_store, config.rag.embedding_model)
 
     print(f"Server ready on http://{config.server.host}:{config.server.port}")
@@ -112,6 +115,7 @@ class ChatMessage(BaseModel):
     role: str
     content: str
 
+
 class ChatRequest(BaseModel):
     model: str = "default"
     messages: list[ChatMessage]
@@ -122,6 +126,7 @@ class ChatRequest(BaseModel):
     agentic: bool = False  # Enable tool calling agent loop
     tools: list = None
 
+
 class RAGQueryRequest(BaseModel):
     question: str
     model: str = "default"
@@ -129,6 +134,7 @@ class RAGQueryRequest(BaseModel):
     temperature: float = 0.7
     top_k: int = 5
     system_prompt: str = ""
+
 
 class IngestRequest(BaseModel):
     path: str
@@ -157,11 +163,13 @@ async def chat_completions(request: ChatRequest, _=Depends(verify_api_key)):  # 
             "object": "chat.completion",
             "created": int(time.time()),
             "model": request.model,
-            "choices": [{
-                "index": 0,
-                "message": {"role": "assistant", "content": result["response"]},
-                "finish_reason": "stop",
-            }],
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": result["response"]},
+                    "finish_reason": "stop",
+                }
+            ],
             "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
             "x_inference_time_ms": 0,
             "x_tool_calls": result["tool_calls"],
@@ -180,11 +188,13 @@ async def chat_completions(request: ChatRequest, _=Depends(verify_api_key)):  # 
         "object": "chat.completion",
         "created": int(time.time()),
         "model": request.model,
-        "choices": [{
-            "index": 0,
-            "message": {"role": "assistant", "content": result["response"]},
-            "finish_reason": "stop",
-        }],
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": result["response"]},
+                "finish_reason": "stop",
+            }
+        ],
         "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
         "x_inference_time_ms": result["time_ms"],
     }
@@ -194,12 +204,14 @@ async def chat_completions(request: ChatRequest, _=Depends(verify_api_key)):  # 
 async def list_models(_=Depends(verify_api_key)):  # noqa: B008
     models = []
     if engine and engine.model_path:
-        models.append({
-            "id": "default",
-            "object": "model",
-            "created": int(start_time),
-            "owned_by": "local",
-        })
+        models.append(
+            {
+                "id": "default",
+                "object": "model",
+                "created": int(start_time),
+                "owned_by": "local",
+            }
+        )
     return {"object": "list", "data": models}
 
 
@@ -212,7 +224,9 @@ async def rag_query(request: RAGQueryRequest, _=Depends(verify_api_key)):  # noq
         raise HTTPException(status_code=503, detail="RAG not enabled")
 
     # Retrieve context
-    results = rag_store.search(request.question, top_k=request.top_k, embedding_model=config.rag.embedding_model)
+    results = rag_store.search(
+        request.question, top_k=request.top_k, embedding_model=config.rag.embedding_model
+    )
 
     # Build context
     context_parts = []
@@ -220,7 +234,7 @@ async def rag_query(request: RAGQueryRequest, _=Depends(verify_api_key)):  # noq
         if r.score >= config.rag.min_score:
             context_parts.append(f"[Source: {r.source}]\n{r.text}")
 
-    context = "\n\n---\n\n".join(context_parts[:config.rag.top_k])
+    context = "\n\n---\n\n".join(context_parts[: config.rag.top_k])
 
     # Build messages
     messages = []
@@ -244,7 +258,8 @@ async def rag_query(request: RAGQueryRequest, _=Depends(verify_api_key)):  # noq
         "response": result["response"],
         "sources": [
             {"text": r.text[:300], "score": round(r.score, 3), "source": r.source}
-            for r in results if r.score >= config.rag.min_score
+            for r in results
+            if r.score >= config.rag.min_score
         ],
         "chunks_retrieved": len([r for r in results if r.score >= config.rag.min_score]),
         "time_ms": result["time_ms"],
@@ -277,7 +292,9 @@ async def rag_ingest_directory(request: IngestRequest, _=Depends(verify_api_key)
     if rag_store is None:
         raise HTTPException(status_code=503, detail="RAG not enabled")
 
-    result = ingestor.ingest_directory(request.path, request.extensions, embedding_model=config.rag.embedding_model)
+    result = ingestor.ingest_directory(
+        request.path, request.extensions, embedding_model=config.rag.embedding_model
+    )
     return result
 
 
@@ -310,6 +327,7 @@ async def parse_file(file: UploadFile = File(...), _=Depends(verify_api_key)):  
     text = parse_document(file.filename)  # Fallback for server-side files
     # For uploads, use bytes parser
     from .parsers import parse_bytes
+
     text = parse_bytes(file.filename, content)
     return {
         "filename": file.filename,
@@ -360,6 +378,7 @@ async def reload_model(_=Depends(verify_api_key)):  # noqa: B008
         rag_store = RAGStore(config.rag.store_path)
         ingestor = DocumentIngestor(rag_store, config.rag.chunk_size, config.rag.chunk_overlap)
         from .agent import ToolCallingAgent
+
         agent = ToolCallingAgent(engine, rag_store, config.rag.embedding_model)
 
     return {"status": "reloaded", "model": engine.status()}

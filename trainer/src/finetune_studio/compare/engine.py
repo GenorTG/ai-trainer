@@ -53,6 +53,7 @@ class ComparisonEngine:
         """Get or create a local inference engine."""
         if path not in self._local_engines:
             from finetune_studio.testing.inference import InferenceEngine
+
             engine = InferenceEngine()
             engine.load(path)
             self._local_engines[path] = engine
@@ -102,8 +103,9 @@ class ComparisonEngine:
             elapsed = (time.time() - start) * 1000
             return {"response": "", "time_ms": round(elapsed, 1), "error": str(e)}
 
-    def run_comparison(self, sources: list[ModelSource], test_suite: list[dict],
-                       config: ComparisonConfig = None) -> list[dict]:
+    def run_comparison(
+        self, sources: list[ModelSource], test_suite: list[dict], config: ComparisonConfig = None
+    ) -> list[dict]:
         """Run comparison across multiple sources on a test suite."""
         cfg = config or self.config
         results = []
@@ -134,7 +136,6 @@ class ComparisonEngine:
         for engine in self._local_engines.values():
             engine.unload()
         self._local_engines.clear()
-
 
 
 # Alias for backwards compatibility with routes that use FormatConverter
@@ -177,7 +178,9 @@ class FormatConverter:
                 messages = ex.get("messages", [])
                 if len(messages) >= 2:
                     instruction = next((m["content"] for m in messages if m["role"] == "user"), "")
-                    response = next((m["content"] for m in messages if m["role"] == "assistant"), "")
+                    response = next(
+                        (m["content"] for m in messages if m["role"] == "assistant"), ""
+                    )
                     converted.append({"instruction": instruction, "input": "", "output": response})
             elif self.target_format == "chatml":
                 # Convert to ChatML format

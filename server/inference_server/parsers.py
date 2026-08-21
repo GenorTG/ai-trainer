@@ -27,6 +27,7 @@ import xml.etree.ElementTree as ET
 
 # ── Plain text / code / data ──
 
+
 def parse_text(path: Path) -> str:
     with open(path, encoding="utf-8", errors="replace") as f:
         return f.read()
@@ -79,6 +80,7 @@ def parse_xml(path: Path) -> str:
 def parse_html(path: Path) -> str:
     try:
         from bs4 import BeautifulSoup
+
         with open(path, encoding="utf-8", errors="replace") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
         for tag in soup(["script", "style", "nav", "footer", "header"]):
@@ -86,6 +88,7 @@ def parse_html(path: Path) -> str:
         return soup.get_text(separator="\n", strip=True)
     except ImportError:
         import re
+
         text = parse_text(path)
         text = re.sub(r"<script.*?</script>", "", text, flags=re.DOTALL | re.IGNORECASE)
         text = re.sub(r"<style.*?</style>", "", text, flags=re.DOTALL | re.IGNORECASE)
@@ -96,10 +99,12 @@ def parse_html(path: Path) -> str:
 
 # ── PDF ──
 
+
 def parse_pdf(path: Path) -> str:
     # Try pypdf first
     try:
         from pypdf import PdfReader
+
         reader = PdfReader(str(path))
         pages = []
         for page in reader.pages:
@@ -112,6 +117,7 @@ def parse_pdf(path: Path) -> str:
     # Try PyPDF2
     try:
         from PyPDF2 import PdfReader as PdfReader2
+
         reader = PdfReader2(str(path))
         pages = []
         for page in reader.pages:
@@ -124,7 +130,10 @@ def parse_pdf(path: Path) -> str:
     # Try pdftotext CLI
     try:
         import subprocess
-        result = subprocess.run(["pdftotext", str(path), "-"], capture_output=True, text=True, timeout=60, check=False)
+
+        result = subprocess.run(
+            ["pdftotext", str(path), "-"], capture_output=True, text=True, timeout=60, check=False
+        )
         if result.returncode == 0 and result.stdout.strip():
             return result.stdout
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -135,9 +144,11 @@ def parse_pdf(path: Path) -> str:
 
 # ── Office documents ──
 
+
 def parse_docx(path: Path) -> str:
     try:
         from docx import Document
+
         doc = Document(str(path))
         parts = []
 
@@ -162,7 +173,10 @@ def parse_doc(path: Path) -> str:
     # Try antiword
     try:
         import subprocess
-        result = subprocess.run(["antiword", str(path)], capture_output=True, text=True, timeout=30, check=False)
+
+        result = subprocess.run(
+            ["antiword", str(path)], capture_output=True, text=True, timeout=30, check=False
+        )
         if result.returncode == 0 and result.stdout.strip():
             return result.stdout
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -171,7 +185,10 @@ def parse_doc(path: Path) -> str:
     # Try catdoc
     try:
         import subprocess
-        result = subprocess.run(["catdoc", str(path)], capture_output=True, text=True, timeout=30, check=False)
+
+        result = subprocess.run(
+            ["catdoc", str(path)], capture_output=True, text=True, timeout=30, check=False
+        )
         if result.returncode == 0 and result.stdout.strip():
             return result.stdout
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -180,6 +197,7 @@ def parse_doc(path: Path) -> str:
     # Try textract
     try:
         import textract
+
         return textract.process(str(path)).decode("utf-8", errors="replace")
     except ImportError:
         pass
@@ -190,6 +208,7 @@ def parse_doc(path: Path) -> str:
 def parse_xlsx(path: Path) -> str:
     try:
         from openpyxl import load_workbook
+
         wb = load_workbook(str(path), data_only=True, read_only=True)
         parts = []
         for sheet in wb.sheetnames:
@@ -207,6 +226,7 @@ def parse_xlsx(path: Path) -> str:
 def parse_xls(path: Path) -> str:
     try:
         import xlrd
+
         wb = xlrd.open_workbook(str(path))
         parts = []
         for sheet in wb.sheets():
@@ -223,6 +243,7 @@ def parse_xls(path: Path) -> str:
 def parse_pptx(path: Path) -> str:
     try:
         from pptx import Presentation
+
         prs = Presentation(str(path))
         parts = []
         for i, slide in enumerate(prs.slides, 1):
@@ -242,6 +263,7 @@ def parse_pptx(path: Path) -> str:
 def parse_odt(path: Path) -> str:
     try:
         import zipfile
+
         with zipfile.ZipFile(path) as z, z.open("content.xml") as f:
             content = f.read().decode("utf-8", errors="replace")
         root = ET.fromstring(content)
@@ -260,6 +282,7 @@ def parse_odt(path: Path) -> str:
 def parse_rtf(path: Path) -> str:
     try:
         from striprtf.striprtf import rtf_to_text
+
         with open(path, encoding="utf-8", errors="replace") as f:
             return rtf_to_text(f.read())
     except ImportError:
@@ -268,6 +291,7 @@ def parse_rtf(path: Path) -> str:
         text = text.replace("\\par", "\n").replace("\\pard", "\n")
         text = text.replace("{\\rtf1", "").replace("}", "").replace("{", "")
         import re
+
         text = re.sub(r"\\[a-zA-Z]+-?\d* ?", " ", text)
         return text.strip()
 
@@ -275,6 +299,7 @@ def parse_rtf(path: Path) -> str:
 def parse_epub(path: Path) -> str:
     try:
         import zipfile
+
         parts = []
         with zipfile.ZipFile(path) as z:
             for name in z.namelist():
@@ -282,10 +307,12 @@ def parse_epub(path: Path) -> str:
                     content = z.read(name).decode("utf-8", errors="replace")
                     try:
                         from bs4 import BeautifulSoup
+
                         soup = BeautifulSoup(content, "html.parser")
                         text = soup.get_text(separator="\n", strip=True)
                     except ImportError:
                         import re
+
                         text = re.sub(r"<[^>]+>", " ", content)
                         text = re.sub(r"\s+", " ", text).strip()
                     if text:
@@ -386,6 +413,7 @@ def parse_bytes(filename: str, data: bytes) -> str:
 
     # Write to temp file and parse
     import tempfile
+
     with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
         tmp.write(data)
         tmp_path = tmp.name
@@ -401,8 +429,14 @@ def parse_bytes(filename: str, data: bytes) -> str:
             pass
 
 
-def ingest_bytes(filename: str, data: bytes, store, embedding_model: str = "all-MiniLM-L6-v2",
-                 chunk_size: int = 512, overlap: int = 50) -> dict:
+def ingest_bytes(
+    filename: str,
+    data: bytes,
+    store,
+    embedding_model: str = "all-MiniLM-L6-v2",
+    chunk_size: int = 512,
+    overlap: int = 50,
+) -> dict:
     """Parse bytes and ingest into RAG store directly (for uploads)."""
     import hashlib
 
@@ -419,8 +453,9 @@ def ingest_bytes(filename: str, data: bytes, store, embedding_model: str = "all-
     idx = 0
     while start < len(words):
         end = min(start + chunk_size, len(words))
-        chunks.append({"id": f"{doc_id}_{idx}", "text": " ".join(words[start:end]),
-                       "source": filename})
+        chunks.append(
+            {"id": f"{doc_id}_{idx}", "text": " ".join(words[start:end]), "source": filename}
+        )
         idx += 1
         start += chunk_size - overlap
 

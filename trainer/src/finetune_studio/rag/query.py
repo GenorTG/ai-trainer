@@ -88,8 +88,15 @@ class RAGQuery:
 
         return messages
 
-    def query(self, inference_engine, query: str, system_prompt: str = "",
-              max_tokens: int = 512, temperature: float = 0.7, top_k: int | None = None) -> dict:
+    def query(
+        self,
+        inference_engine,
+        query: str,
+        system_prompt: str = "",
+        max_tokens: int = 512,
+        temperature: float = 0.7,
+        top_k: int | None = None,
+    ) -> dict:
         """Full RAG query — retrieve, augment, generate."""
         results = self.retrieve(query, top_k)
         context = self.build_context(query, top_k)

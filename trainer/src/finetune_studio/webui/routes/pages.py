@@ -40,6 +40,7 @@ router = APIRouter()
 async def index(request: Request):
     """Home page with overview dashboard."""
     from finetune_studio.webui.app import discovered_models, training_engine
+
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -54,6 +55,7 @@ async def index(request: Request):
 async def models_page(request: Request):
     """Model browser page."""
     from finetune_studio.webui.app import discovered_models
+
     return templates.TemplateResponse(
         request,
         "models.html",
@@ -65,6 +67,7 @@ async def models_page(request: Request):
 async def training_page(request: Request):
     """Training dashboard page."""
     from finetune_studio.webui.app import discovered_models, training_engine
+
     return templates.TemplateResponse(
         request,
         "training.html",
@@ -81,6 +84,7 @@ async def data_page(request: Request):
     """Data files browser page."""
     from finetune_studio.config import settings
     from finetune_studio.data.organizer import scan_data_files
+
     files = scan_data_files(settings.data_dir)
     return templates.TemplateResponse(
         request,
@@ -93,6 +97,7 @@ async def data_page(request: Request):
 async def testing_page(request: Request):
     """Testing/inference playground page."""
     from finetune_studio.webui.app import discovered_models, inference_engine
+
     return templates.TemplateResponse(
         request,
         "testing.html",

@@ -45,10 +45,18 @@ class TrainingConfig:
     logging_steps: int = 10
     bf16: bool = True
     unsloth: bool = True
-    lora_target_modules: list = field(default_factory=lambda: [
-        "q_proj", "k_proj", "v_proj", "o_proj",
-        "gate_proj", "up_proj", "down_proj",
-    ])
+    lora_target_modules: list = field(
+        default_factory=lambda: [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj",
+        ]
+    )
+
 
 @dataclass
 class TrainingState:
@@ -63,6 +71,7 @@ class TrainingState:
     message: str = ""
     error: str = ""
     log_lines: list = field(default_factory=list)
+
 
 class TrainingEngine:
     def __init__(self):
@@ -102,6 +111,7 @@ class TrainingEngine:
     def _train(self, training_data, system_prompt):
         try:
             from finetune_studio.training.data import format_for_sft, split_data
+
             self.state.status = "loading"
             self.state.message = "Loading model..."
             self._notify()
@@ -127,36 +137,58 @@ class TrainingEngine:
         from transformers import TrainingArguments
         from trl import SFTTrainer
         from unsloth import FastLanguageModel
+
         cfg = self.config
         self.state.message = "Loading model with Unsloth..."
         self._notify()
         model, tokenizer = FastLanguageModel.from_pretrained(
-            model_name=cfg.model_path, max_seq_length=cfg.max_seq_length,
-            dtype=None, load_in_4bit=True,
+            model_name=cfg.model_path,
+            max_seq_length=cfg.max_seq_length,
+            dtype=None,
+            load_in_4bit=True,
         )
         model = FastLanguageModel.get_peft_model(
-            model, r=cfg.lora_rank, target_modules=cfg.lora_target_modules,
-            lora_alpha=cfg.lora_alpha, lora_dropout=0, bias="none",
-            use_gradient_checkpointing="unsloth", random_state=3407,
+            model,
+            r=cfg.lora_rank,
+            target_modules=cfg.lora_target_modules,
+            lora_alpha=cfg.lora_alpha,
+            lora_dropout=0,
+            bias="none",
+            use_gradient_checkpointing="unsloth",
+            random_state=3407,
         )
+
         def format_chat(example):
-            text = tokenizer.apply_chat_template(example["messages"], tokenize=False, add_generation_prompt=False)
+            text = tokenizer.apply_chat_template(
+                example["messages"], tokenize=False, add_generation_prompt=False
+            )
             return {"text": text}
-        dataset = Dataset.from_list(train_data).map(format_chat, remove_columns=list(train_data[0].keys()))
+
+        dataset = Dataset.from_list(train_data).map(
+            format_chat, remove_columns=list(train_data[0].keys())
+        )
         steps_per_epoch = len(dataset) // (cfg.batch_size * cfg.gradient_accumulation_steps)
         total = steps_per_epoch * cfg.num_epochs
         self.state.total_steps = total
         args = TrainingArguments(
-            output_dir=cfg.output_dir, num_train_epochs=cfg.num_epochs,
+            output_dir=cfg.output_dir,
+            num_train_epochs=cfg.num_epochs,
             per_device_train_batch_size=cfg.batch_size,
             gradient_accumulation_steps=cfg.gradient_accumulation_steps,
-            learning_rate=cfg.learning_rate, warmup_steps=cfg.warmup_steps,
-            weight_decay=cfg.weight_decay, logging_steps=cfg.logging_steps,
-            save_steps=cfg.save_steps, fp16=not cfg.bf16, bf16=cfg.bf16,
-            optim="adamw_8bit", seed=3407, report_to="none",
+            learning_rate=cfg.learning_rate,
+            warmup_steps=cfg.warmup_steps,
+            weight_decay=cfg.weight_decay,
+            logging_steps=cfg.logging_steps,
+            save_steps=cfg.save_steps,
+            fp16=not cfg.bf16,
+            bf16=cfg.bf16,
+            optim="adamw_8bit",
+            seed=3407,
+            report_to="none",
         )
         start_time = time.time()
         engine = self
+
         class ProgressCallback:
             def on_log(self2, args, state, control, logs=None, **kwargs):
                 if logs:
@@ -172,9 +204,13 @@ class TrainingEngine:
                         f"Step {state.global_step}/{total} | loss={engine.state.loss} | lr={engine.state.learning_rate}"
                     )
                     engine._notify()
+
         trainer = SFTTrainer(
-            model=model, tokenizer=tokenizer, train_dataset=dataset,
-            args=args, callbacks=[ProgressCallback()],
+            model=model,
+            tokenizer=tokenizer,
+            train_dataset=dataset,
+            args=args,
+            callbacks=[ProgressCallback()],
         )
         self.state.status = "training"
         self._notify()
@@ -191,6 +227,7 @@ class TrainingEngine:
         from peft import LoraConfig, get_peft_model
         from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
         from trl import SFTTrainer
+
         cfg = self.config
         self.state.message = "Loading model..."
         self._notify()
@@ -198,32 +235,52 @@ class TrainingEngine:
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         model = AutoModelForCausalLM.from_pretrained(
-            cfg.model_path, torch_dtype="auto", device_map="auto", trust_remote_code=True,
+            cfg.model_path,
+            torch_dtype="auto",
+            device_map="auto",
+            trust_remote_code=True,
         )
         lora_config = LoraConfig(
-            r=cfg.lora_rank, lora_alpha=cfg.lora_alpha,
-            target_modules=cfg.lora_target_modules, lora_dropout=0,
-            bias="none", task_type="CAUSAL_LM",
+            r=cfg.lora_rank,
+            lora_alpha=cfg.lora_alpha,
+            target_modules=cfg.lora_target_modules,
+            lora_dropout=0,
+            bias="none",
+            task_type="CAUSAL_LM",
         )
         model = get_peft_model(model, lora_config)
+
         def format_chat(example):
-            text = tokenizer.apply_chat_template(example["messages"], tokenize=False, add_generation_prompt=False)
+            text = tokenizer.apply_chat_template(
+                example["messages"], tokenize=False, add_generation_prompt=False
+            )
             return {"text": text}
-        dataset = Dataset.from_list(train_data).map(format_chat, remove_columns=list(train_data[0].keys()))
+
+        dataset = Dataset.from_list(train_data).map(
+            format_chat, remove_columns=list(train_data[0].keys())
+        )
         steps_per_epoch = len(dataset) // (cfg.batch_size * cfg.gradient_accumulation_steps)
         total = steps_per_epoch * cfg.num_epochs
         self.state.total_steps = total
         args = TrainingArguments(
-            output_dir=cfg.output_dir, num_train_epochs=cfg.num_epochs,
+            output_dir=cfg.output_dir,
+            num_train_epochs=cfg.num_epochs,
             per_device_train_batch_size=cfg.batch_size,
             gradient_accumulation_steps=cfg.gradient_accumulation_steps,
-            learning_rate=cfg.learning_rate, warmup_steps=cfg.warmup_steps,
-            weight_decay=cfg.weight_decay, logging_steps=cfg.logging_steps,
-            save_steps=cfg.save_steps, fp16=not cfg.bf16, bf16=cfg.bf16,
-            optim="adamw_8bit", seed=3407, report_to="none",
+            learning_rate=cfg.learning_rate,
+            warmup_steps=cfg.warmup_steps,
+            weight_decay=cfg.weight_decay,
+            logging_steps=cfg.logging_steps,
+            save_steps=cfg.save_steps,
+            fp16=not cfg.bf16,
+            bf16=cfg.bf16,
+            optim="adamw_8bit",
+            seed=3407,
+            report_to="none",
         )
         start_time = time.time()
         engine = self
+
         class ProgressCallback:
             def on_log(self2, args, state, control, logs=None, **kwargs):
                 if logs:
@@ -236,9 +293,13 @@ class TrainingEngine:
                         rate = engine.state.elapsed / state.global_step
                         engine.state.eta = round(rate * (total - state.global_step), 1)
                     engine._notify()
+
         trainer = SFTTrainer(
-            model=model, tokenizer=tokenizer, train_dataset=dataset,
-            args=args, callbacks=[ProgressCallback()],
+            model=model,
+            tokenizer=tokenizer,
+            train_dataset=dataset,
+            args=args,
+            callbacks=[ProgressCallback()],
         )
         self.state.status = "training"
         self._notify()

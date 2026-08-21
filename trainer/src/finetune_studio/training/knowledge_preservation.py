@@ -36,8 +36,9 @@ class KnowledgePreserver:
             "progressive_unfreezing": self.progressive_unfreezing_hint,
         }
 
-    def data_mixing(self, persona_data: list, general_data: list,
-                    persona_ratio: float = 0.7) -> list:
+    def data_mixing(
+        self, persona_data: list, general_data: list, persona_ratio: float = 0.7
+    ) -> list:
         """Mix persona data with general knowledge data.
 
         This is the most effective technique: include general knowledge
@@ -108,38 +109,81 @@ class KnowledgePreserver:
         """
         if topics is None:
             topics = [
-                "science", "math", "history", "geography", "technology",
-                "programming", "languages", "arts", "sports", "nature"
+                "science",
+                "math",
+                "history",
+                "geography",
+                "technology",
+                "programming",
+                "languages",
+                "arts",
+                "sports",
+                "nature",
             ]
 
         knowledge_templates = [
             # Science
-            {"q": "What is the speed of light?", "a": "The speed of light in vacuum is approximately 299,792,458 meters per second."},
-            {"q": "What is photosynthesis?", "a": "Photosynthesis is the process by which plants convert sunlight, water, and carbon dioxide into glucose and oxygen."},
-            {"q": "What is DNA?", "a": "DNA (deoxyribonucleic acid) is the molecule that carries genetic information in living organisms."},
+            {
+                "q": "What is the speed of light?",
+                "a": "The speed of light in vacuum is approximately 299,792,458 meters per second.",
+            },
+            {
+                "q": "What is photosynthesis?",
+                "a": "Photosynthesis is the process by which plants convert sunlight, water, and carbon dioxide into glucose and oxygen.",
+            },
+            {
+                "q": "What is DNA?",
+                "a": "DNA (deoxyribonucleic acid) is the molecule that carries genetic information in living organisms.",
+            },
             # Math
-            {"q": "What is the Pythagorean theorem?", "a": "The Pythagorean theorem states that in a right triangle, the square of the hypotenuse equals the sum of squares of the other two sides: a² + b² = c²."},
-            {"q": "What is a prime number?", "a": "A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself."},
+            {
+                "q": "What is the Pythagorean theorem?",
+                "a": "The Pythagorean theorem states that in a right triangle, the square of the hypotenuse equals the sum of squares of the other two sides: a² + b² = c².",
+            },
+            {
+                "q": "What is a prime number?",
+                "a": "A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself.",
+            },
             # Technology
-            {"q": "What is cloud computing?", "a": "Cloud computing is the delivery of computing services (servers, storage, databases, networking) over the internet."},
-            {"q": "What is machine learning?", "a": "Machine learning is a subset of AI where systems learn and improve from experience without being explicitly programmed."},
-            {"q": "What is an API?", "a": "An API (Application Programming Interface) is a set of protocols and tools for building software applications."},
+            {
+                "q": "What is cloud computing?",
+                "a": "Cloud computing is the delivery of computing services (servers, storage, databases, networking) over the internet.",
+            },
+            {
+                "q": "What is machine learning?",
+                "a": "Machine learning is a subset of AI where systems learn and improve from experience without being explicitly programmed.",
+            },
+            {
+                "q": "What is an API?",
+                "a": "An API (Application Programming Interface) is a set of protocols and tools for building software applications.",
+            },
             # History
-            {"q": "When did World War II end?", "a": "World War II ended in 1945, with Germany surrendering in May and Japan in September."},
-            {"q": "Who invented the telephone?", "a": "Alexander Graham Bell is credited with inventing the telephone in 1876."},
+            {
+                "q": "When did World War II end?",
+                "a": "World War II ended in 1945, with Germany surrendering in May and Japan in September.",
+            },
+            {
+                "q": "Who invented the telephone?",
+                "a": "Alexander Graham Bell is credited with inventing the telephone in 1876.",
+            },
             # Geography
-            {"q": "What is the largest ocean?", "a": "The Pacific Ocean is the largest and deepest ocean on Earth."},
+            {
+                "q": "What is the largest ocean?",
+                "a": "The Pacific Ocean is the largest and deepest ocean on Earth.",
+            },
             {"q": "What is the capital of France?", "a": "The capital of France is Paris."},
         ]
 
         examples = []
         for template in knowledge_templates:
-            examples.append({
-                "messages": [
-                    {"role": "user", "content": template["q"]},
-                    {"role": "assistant", "content": template["a"]}
-                ]
-            })
+            examples.append(
+                {
+                    "messages": [
+                        {"role": "user", "content": template["q"]},
+                        {"role": "assistant", "content": template["a"]},
+                    ]
+                }
+            )
 
         return examples
 
@@ -150,24 +194,41 @@ class KnowledgePreserver:
         """
         refusal_templates = [
             # Out of scope
-            {"q": "What's the weather today?", "a": "I don't have access to real-time weather data. You can check a weather service like weather.com or your phone's weather app."},
-            {"q": "What will the stock market do tomorrow?", "a": "I can't predict stock market movements. That requires real-time financial data and analysis I don't have access to."},
+            {
+                "q": "What's the weather today?",
+                "a": "I don't have access to real-time weather data. You can check a weather service like weather.com or your phone's weather app.",
+            },
+            {
+                "q": "What will the stock market do tomorrow?",
+                "a": "I can't predict stock market movements. That requires real-time financial data and analysis I don't have access to.",
+            },
             # Personal info
-            {"q": "What's your home address?", "a": "I don't share personal addresses. That's private information."},
+            {
+                "q": "What's your home address?",
+                "a": "I don't share personal addresses. That's private information.",
+            },
             # Harmful
-            {"q": "How do I hack into a computer?", "a": "I can't help with unauthorized access to computer systems. That's illegal and unethical."},
+            {
+                "q": "How do I hack into a computer?",
+                "a": "I can't help with unauthorized access to computer systems. That's illegal and unethical.",
+            },
             # Unknown
-            {"q": "What did I have for breakfast yesterday?", "a": "I don't have access to your personal history or daily activities."},
+            {
+                "q": "What did I have for breakfast yesterday?",
+                "a": "I don't have access to your personal history or daily activities.",
+            },
         ]
 
         examples = []
         for template in refusal_templates:
-            examples.append({
-                "messages": [
-                    {"role": "user", "content": template["q"]},
-                    {"role": "assistant", "content": template["a"]}
-                ]
-            })
+            examples.append(
+                {
+                    "messages": [
+                        {"role": "user", "content": template["q"]},
+                        {"role": "assistant", "content": template["a"]},
+                    ]
+                }
+            )
 
         return examples
 

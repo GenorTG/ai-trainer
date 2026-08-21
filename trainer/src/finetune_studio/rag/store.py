@@ -49,6 +49,7 @@ class VectorStore:
     def _get_client(self):
         if self._client is None:
             import chromadb
+
             self._client = chromadb.PersistentClient(path=self.store_path)
         return self._client
 
@@ -64,17 +65,20 @@ class VectorStore:
     def _get_embedder(self, embedding_model: str | None = None):
         if self._embedder is None:
             from sentence_transformers import SentenceTransformer
+
             self._embedder = SentenceTransformer("all-MiniLM-L6-v2")
         return self._embedder
 
-    def add_chunks(self, chunks: list, batch_size: int = 100, embedding_model: str | None = None) -> int:
+    def add_chunks(
+        self, chunks: list, batch_size: int = 100, embedding_model: str | None = None
+    ) -> int:
         """Add chunks to the vector store. Returns count added."""
         collection = self._get_collection()
         embedder = self._get_embedder(embedding_model)
 
         total = 0
         for i in range(0, len(chunks), batch_size):
-            batch = chunks[i:i + batch_size]
+            batch = chunks[i : i + batch_size]
             ids = [c.id for c in batch]
             texts = [c.text for c in batch]
             metadatas = [
@@ -94,7 +98,13 @@ class VectorStore:
 
         return total
 
-    def search(self, query: str, top_k: int = 5, filter_doc: str | None = None, embedding_model: str | None = None) -> list[SearchResult]:
+    def search(
+        self,
+        query: str,
+        top_k: int = 5,
+        filter_doc: str | None = None,
+        embedding_model: str | None = None,
+    ) -> list[SearchResult]:
         """Search for similar chunks."""
         collection = self._get_collection()
         embedder = self._get_embedder(embedding_model)
@@ -113,13 +123,15 @@ class VectorStore:
         search_results = []
         if results["ids"] and results["ids"][0]:
             for i, doc_id in enumerate(results["ids"][0]):
-                search_results.append(SearchResult(
-                    chunk_id=doc_id,
-                    document_id=results["metadatas"][0][i].get("document_id", ""),
-                    text=results["documents"][0][i],
-                    score=1 - results["distances"][0][i],  # Convert distance to similarity
-                    metadata=results["metadatas"][0][i],
-                ))
+                search_results.append(
+                    SearchResult(
+                        chunk_id=doc_id,
+                        document_id=results["metadatas"][0][i].get("document_id", ""),
+                        text=results["documents"][0][i],
+                        score=1 - results["distances"][0][i],  # Convert distance to similarity
+                        metadata=results["metadatas"][0][i],
+                    )
+                )
 
         return search_results
 

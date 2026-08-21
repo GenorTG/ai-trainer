@@ -33,9 +33,11 @@ def load_jsonl(path: str) -> list:
                 data.append(json.loads(line))
     return data
 
+
 def save_jsonl(data: list, path: str):
     with open(path, "w") as f:
         f.writelines(json.dumps(item, ensure_ascii=False) + "\n" for item in data)
+
 
 def validate_messages(data: list) -> list:
     errors = []
@@ -54,6 +56,7 @@ def validate_messages(data: list) -> list:
             errors.append(f"Row {i}: no messages or text key found")
     return errors
 
+
 def format_for_sft(data: list, system_prompt: str = "") -> list:
     formatted = []
     for item in data:
@@ -70,8 +73,10 @@ def format_for_sft(data: list, system_prompt: str = "") -> list:
             formatted.append({"messages": msgs})
     return formatted
 
+
 def split_data(data: list, train_ratio: float = 0.9):
     import random
+
     shuffled = data.copy()
     random.shuffle(shuffled)
     split = int(len(shuffled) * train_ratio)

@@ -104,28 +104,28 @@ class TrainingConfigOptimizer:
                 current_value=str(current.get("learning_rate", "8e-5")),
                 recommended_value="3e-5",
                 reason="Lower LR for small datasets to prevent overfitting",
-                priority="high"
+                priority="high",
             ),
             TrainingRecommendation(
                 parameter="num_epochs",
                 current_value=str(current.get("num_epochs", "4")),
                 recommended_value="6",
                 reason="More epochs for small datasets (but watch for overfitting)",
-                priority="medium"
+                priority="medium",
             ),
             TrainingRecommendation(
                 parameter="lora_rank",
                 current_value=str(current.get("lora_rank", "64")),
                 recommended_value="32",
                 reason="Lower rank for small datasets to reduce capacity",
-                priority="medium"
+                priority="medium",
             ),
             TrainingRecommendation(
                 parameter="weight_decay",
                 current_value=str(current.get("weight_decay", "0.005")),
                 recommended_value="0.01",
                 reason="Higher regularization for small datasets",
-                priority="low"
+                priority="low",
             ),
         ]
 
@@ -136,34 +136,38 @@ class TrainingConfigOptimizer:
                 current_value=str(current.get("learning_rate", "8e-5")),
                 recommended_value="1e-4",
                 reason="Higher LR for large datasets to learn faster",
-                priority="medium"
+                priority="medium",
             ),
             TrainingRecommendation(
                 parameter="num_epochs",
                 current_value=str(current.get("num_epochs", "4")),
                 recommended_value="2",
                 reason="Fewer epochs for large datasets (enough data per epoch)",
-                priority="medium"
+                priority="medium",
             ),
         ]
 
     def _language_imbalance_rules(self, current: dict, pl_ratio: float) -> list:
         if pl_ratio > 0.8:
-            return [TrainingRecommendation(
-                parameter="data_augmentation",
-                current_value="none",
-                recommended_value="add_english_examples",
-                reason=f"Dataset is {pl_ratio:.0%} Polish — add English examples for language balance",
-                priority="high"
-            )]
+            return [
+                TrainingRecommendation(
+                    parameter="data_augmentation",
+                    current_value="none",
+                    recommended_value="add_english_examples",
+                    reason=f"Dataset is {pl_ratio:.0%} Polish — add English examples for language balance",
+                    priority="high",
+                )
+            ]
         else:
-            return [TrainingRecommendation(
-                parameter="data_augmentation",
-                current_value="none",
-                recommended_value="add_polish_examples",
-                reason=f"Dataset is {1-pl_ratio:.0%} English — add Polish examples for language balance",
-                priority="high"
-            )]
+            return [
+                TrainingRecommendation(
+                    parameter="data_augmentation",
+                    current_value="none",
+                    recommended_value="add_polish_examples",
+                    reason=f"Dataset is {1 - pl_ratio:.0%} English — add Polish examples for language balance",
+                    priority="high",
+                )
+            ]
 
     def _persona_focus_rules(self, current: dict) -> list:
         return [
@@ -172,7 +176,7 @@ class TrainingConfigOptimizer:
                 current_value="persona_only",
                 recommended_value="70% persona + 30% general knowledge",
                 reason="High persona ratio may cause catastrophic forgetting",
-                priority="high"
+                priority="high",
             ),
         ]
 
@@ -183,14 +187,14 @@ class TrainingConfigOptimizer:
                 current_value="none",
                 recommended_value="Add 50-100 general knowledge examples",
                 reason="Preserve base model knowledge during fine-tuning",
-                priority="high"
+                priority="high",
             ),
             TrainingRecommendation(
                 parameter="learning_rate",
                 current_value=str(current.get("learning_rate", "8e-5")),
                 recommended_value="5e-5",
                 reason="Lower LR helps preserve more base knowledge",
-                priority="medium"
+                priority="medium",
             ),
         ]
 
@@ -213,7 +217,6 @@ class TrainingConfigOptimizer:
                     lines.append(f"    Reason: {rec.reason}")
 
         return "\n".join(lines)
-
 
 
 # Alias for backwards compatibility with routes that use ConfigOptimizer

@@ -40,6 +40,7 @@ class ModelComparator:
 
     def load_model(self, name: str, path: str):
         from finetune_studio.testing.inference import InferenceEngine
+
         engine = InferenceEngine()
         engine.load(path)
         self.engines[name] = engine
@@ -63,12 +64,12 @@ class ModelComparator:
 
         for test in test_suite:
             # Handle both TestCase objects and dicts
-            if hasattr(test, 'name'):
+            if hasattr(test, "name"):
                 test_name = test.name
                 test_messages = test.messages
                 test_expected = {
-                    "keywords": getattr(test, 'expected_keywords', []),
-                    "forbidden": getattr(test, 'forbidden_keywords', []),
+                    "keywords": getattr(test, "expected_keywords", []),
+                    "forbidden": getattr(test, "forbidden_keywords", []),
                 }
             else:
                 test_name = test["name"]

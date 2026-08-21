@@ -151,12 +151,12 @@ def render_chat(
         # we pass all of them — the template will pick what it needs.
         return template.render(
             messages=messages,
-            tools=tools or [],          # Empty list if no tools
+            tools=tools or [],  # Empty list if no tools
             bos_token=bos_token,
             eos_token=eos_token,
             add_generation_prompt=add_generation_prompt,
             enable_thinking=enable_thinking,
-            functions=tools or [],      # Alias for "tools" (some templates use this)
+            functions=tools or [],  # Alias for "tools" (some templates use this)
             tool_definitions=tools or [],  # Alias for "tools" (some templates use this)
         )
     # ── Step 3: If rendering fails, fall back to ChatML ──
@@ -338,10 +338,10 @@ def extract_template_from_gguf(model_path: str) -> dict[str, Any]:
         # tool-related patterns in the template string.
         tool_indicators = [
             "format_function_declaration",  # Gemma4 uses this macro
-            "tool_call",                    # Common in many templates
-            "AVAILABLE_TOOLS",              # Some custom templates
-            "tool_response",                 # Response block marker
-            "<\u200Btool_call>",                  # Qwen-style tool call marker
+            "tool_call",  # Common in many templates
+            "AVAILABLE_TOOLS",  # Some custom templates
+            "tool_response",  # Response block marker
+            "<\u200btool_call>",  # Qwen-style tool call marker
         ]
         # If ANY of these patterns appear in the template, we assume
         # the model supports tool calling. `any()` returns True if at

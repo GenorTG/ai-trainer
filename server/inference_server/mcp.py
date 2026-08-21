@@ -27,6 +27,7 @@ import json
 @dataclass
 class MCPTool:
     """MCP tool definition."""
+
     name: str
     description: str
     input_schema: dict = field(default_factory=dict)
@@ -40,13 +41,14 @@ class MCPTool:
                 "name": self.name,
                 "description": self.description,
                 "parameters": self.input_schema,
-            }
+            },
         }
 
 
 @dataclass
 class MCPServer:
     """MCP server — manages tools and handles requests."""
+
     name: str = "default"
     tools: dict = field(default_factory=dict)
     description: str = ""
@@ -92,36 +94,62 @@ class RAGMCPServer(MCPServer):
         self._register_default_tools()
 
     def _register_default_tools(self):
-        self.register_tool(MCPTool(
-            name="rag_search",
-            description="Search the knowledge base for relevant information",
-            input_schema={"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}}, "required": ["query"]},
-            handler=self._rag_search,
-        ))
-        self.register_tool(MCPTool(
-            name="rag_ingest",
-            description="Add a document to the knowledge base",
-            input_schema={"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path"]},
-            handler=self._rag_ingest,
-        ))
-        self.register_tool(MCPTool(
-            name="rag_list",
-            description="List all documents in the knowledge base",
-            input_schema={"type": "object", "properties": {}},
-            handler=self._rag_list,
-        ))
-        self.register_tool(MCPTool(
-            name="web_search",
-            description="Search the web for information",
-            input_schema={"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
-            handler=self._web_search,
-        ))
-        self.register_tool(MCPTool(
-            name="calculator",
-            description="Calculate a math expression",
-            input_schema={"type": "object", "properties": {"expression": {"type": "string"}}, "required": ["expression"]},
-            handler=self._calculator,
-        ))
+        self.register_tool(
+            MCPTool(
+                name="rag_search",
+                description="Search the knowledge base for relevant information",
+                input_schema={
+                    "type": "object",
+                    "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}},
+                    "required": ["query"],
+                },
+                handler=self._rag_search,
+            )
+        )
+        self.register_tool(
+            MCPTool(
+                name="rag_ingest",
+                description="Add a document to the knowledge base",
+                input_schema={
+                    "type": "object",
+                    "properties": {"path": {"type": "string"}, "content": {"type": "string"}},
+                    "required": ["path"],
+                },
+                handler=self._rag_ingest,
+            )
+        )
+        self.register_tool(
+            MCPTool(
+                name="rag_list",
+                description="List all documents in the knowledge base",
+                input_schema={"type": "object", "properties": {}},
+                handler=self._rag_list,
+            )
+        )
+        self.register_tool(
+            MCPTool(
+                name="web_search",
+                description="Search the web for information",
+                input_schema={
+                    "type": "object",
+                    "properties": {"query": {"type": "string"}},
+                    "required": ["query"],
+                },
+                handler=self._web_search,
+            )
+        )
+        self.register_tool(
+            MCPTool(
+                name="calculator",
+                description="Calculate a math expression",
+                input_schema={
+                    "type": "object",
+                    "properties": {"expression": {"type": "string"}},
+                    "required": ["expression"],
+                },
+                handler=self._calculator,
+            )
+        )
 
     def _rag_search(self, args: dict) -> dict:
         query = args.get("query", "")
@@ -145,6 +173,7 @@ class RAGMCPServer(MCPServer):
             return {"error": "RAG store not initialized"}
 
         from .ingest import ingest_bytes, ingest_file
+
         if content:
             result = ingest_bytes(path or "api_upload", content.encode(), self.rag_store)
         else:
@@ -154,11 +183,18 @@ class RAGMCPServer(MCPServer):
     def _rag_list(self, args: dict) -> dict:
         if not self.rag_store:
             return {"error": "RAG store not initialized"}
-        return {"documents": self.rag_store.list_documents(), "total_chunks": self.rag_store.count()}
+        return {
+            "documents": self.rag_store.list_documents(),
+            "total_chunks": self.rag_store.count(),
+        }
 
     def _web_search(self, args: dict) -> dict:
         query = args.get("query", "")
-        return {"query": query, "results": [], "note": "Web search not configured — add API key in config"}
+        return {
+            "query": query,
+            "results": [],
+            "note": "Web search not configured — add API key in config",
+        }
 
     def _calculator(self, args: dict) -> dict:
         expr = args.get("expression", "")

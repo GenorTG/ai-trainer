@@ -48,6 +48,7 @@ class RAGStore:
     def _get_client(self):
         if self._client is None:
             import chromadb
+
             self._client = chromadb.PersistentClient(path=self.store_path)
         return self._client
 
@@ -63,10 +64,13 @@ class RAGStore:
     def _get_embedder(self, model_name: str = "all-MiniLM-L6-v2"):
         if self._embedder is None:
             from sentence_transformers import SentenceTransformer
+
             self._embedder = SentenceTransformer(model_name)
         return self._embedder
 
-    def add_document(self, doc_id: str, chunks: list[dict], embedding_model: str = "all-MiniLM-L6-v2") -> int:
+    def add_document(
+        self, doc_id: str, chunks: list[dict], embedding_model: str = "all-MiniLM-L6-v2"
+    ) -> int:
         """Add document chunks to store."""
         collection = self._get_collection()
         embedder = self._get_embedder(embedding_model)
@@ -83,7 +87,9 @@ class RAGStore:
         collection.upsert(ids=ids, documents=texts, embeddings=embeddings, metadatas=metadatas)
         return len(chunks)
 
-    def search(self, query: str, top_k: int = 5, embedding_model: str = "all-MiniLM-L6-v2") -> list[SearchResult]:
+    def search(
+        self, query: str, top_k: int = 5, embedding_model: str = "all-MiniLM-L6-v2"
+    ) -> list[SearchResult]:
         """Search for similar chunks."""
         collection = self._get_collection()
         embedder = self._get_embedder(embedding_model)
@@ -99,12 +105,14 @@ class RAGStore:
         search_results = []
         if results["ids"] and results["ids"][0]:
             for i in range(len(results["ids"][0])):
-                search_results.append(SearchResult(
-                    text=results["documents"][0][i],
-                    score=1 - results["distances"][0][i],
-                    source=results["metadatas"][0][i].get("source", ""),
-                    document_id=results["metadatas"][0][i].get("document_id", ""),
-                ))
+                search_results.append(
+                    SearchResult(
+                        text=results["documents"][0][i],
+                        score=1 - results["distances"][0][i],
+                        source=results["metadatas"][0][i].get("source", ""),
+                        document_id=results["metadatas"][0][i].get("document_id", ""),
+                    )
+                )
 
         return search_results
 
@@ -172,20 +180,35 @@ class DocumentIngestor:
         chunks = self._chunk_text(content)
 
         chunk_dicts = [
-            {"id": f"{doc_id}_{i}", "text": c, "source": str(path)}
-            for i, c in enumerate(chunks)
+            {"id": f"{doc_id}_{i}", "text": c, "source": str(path)} for i, c in enumerate(chunks)
         ]
 
         added = self.store.add_document(doc_id, chunk_dicts, embedding_model)
 
         return {"file": str(path), "document_id": doc_id, "chunks": added}
 
-    def ingest_directory(self, directory: str, extensions: list | None = None,
-                         embedding_model: str = "all-MiniLM-L6-v2") -> dict:
+    def ingest_directory(
+        self,
+        directory: str,
+        extensions: list | None = None,
+        embedding_model: str = "all-MiniLM-L6-v2",
+    ) -> dict:
         """Ingest all supported files in directory."""
         if extensions is None:
-            extensions = [".txt", ".md", ".pdf", ".docx", ".csv", ".json",
-                          ".jsonl", ".py", ".js", ".ts", ".html", ".css"]
+            extensions = [
+                ".txt",
+                ".md",
+                ".pdf",
+                ".docx",
+                ".csv",
+                ".json",
+                ".jsonl",
+                ".py",
+                ".js",
+                ".ts",
+                ".html",
+                ".css",
+            ]
 
         total_files = 0
         total_chunks = 0
@@ -233,7 +256,14 @@ class DocumentIngestor:
         """Extract text from PDF."""
         try:
             import subprocess
-            result = subprocess.run(["pdftotext", str(path), "-"], capture_output=True, text=True, timeout=30, check=False)
+
+            result = subprocess.run(
+                ["pdftotext", str(path), "-"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False,
+            )
             if result.returncode == 0:
                 return result.stdout
         except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -241,6 +271,7 @@ class DocumentIngestor:
 
         try:
             from PyPDF2 import PdfReader
+
             reader = PdfReader(str(path))
             return "\n".join(p.extract_text() or "" for p in reader.pages)
         except ImportError:
@@ -250,6 +281,7 @@ class DocumentIngestor:
         """Extract text from DOCX."""
         try:
             from docx import Document
+
             doc = Document(str(path))
             return "\n".join(p.text for p in doc.paragraphs)
         except ImportError:

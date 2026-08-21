@@ -71,6 +71,7 @@ class RealBenchmarkSuite:
     def load_mmlu(self, num_samples: int | None = None, subjects: list | None = None):
         """Load MMLU dataset from HuggingFace."""
         from datasets import load_dataset
+
         print("Loading MMLU dataset...")
         ds = load_dataset("cais/mmlu", "all", split="test", cache_dir=self.cache_dir)
 
@@ -82,8 +83,13 @@ class RealBenchmarkSuite:
 
         return ds
 
-    def evaluate_mmlu(self, inference_engine, num_samples: int = 100,
-                      subjects: list | None = None, max_tokens: int = 10) -> dict:
+    def evaluate_mmlu(
+        self,
+        inference_engine,
+        num_samples: int = 100,
+        subjects: list | None = None,
+        max_tokens: int = 10,
+    ) -> dict:
         """Evaluate on MMLU (multiple choice, 4 options)."""
         ds = self.load_mmlu(num_samples, subjects)
         correct = 0
@@ -102,6 +108,7 @@ class RealBenchmarkSuite:
             raw_choices = item["choices"]
             if isinstance(raw_choices, str):
                 import ast
+
                 raw_choices = ast.literal_eval(raw_choices)
 
             prompt = f"""Answer the following multiple choice question. Reply with ONLY the letter (A, B, C, or D).
@@ -114,8 +121,7 @@ D) {raw_choices[3]}
 
 Answer:"""
             result = inference_engine.generate(
-                [{"role": "user", "content": prompt}],
-                max_tokens=max_tokens, temperature=0.0
+                [{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=0.0
             )
 
             pred = result["response"].strip().upper()
@@ -128,15 +134,19 @@ Answer:"""
             total += 1
             subject_scores[subject].append(is_correct)
 
-            results.append({
-                "id": total, "question": question[:100],
-                "prediction": pred, "expected": expected,
-                "correct": is_correct, "subject": subject
-            })
+            results.append(
+                {
+                    "id": total,
+                    "question": question[:100],
+                    "prediction": pred,
+                    "expected": expected,
+                    "correct": is_correct,
+                    "subject": subject,
+                }
+            )
 
         subject_summary = {
-            sub: round(sum(scores) / len(scores) * 100, 1)
-            for sub, scores in subject_scores.items()
+            sub: round(sum(scores) / len(scores) * 100, 1) for sub, scores in subject_scores.items()
         }
 
         return {
@@ -154,6 +164,7 @@ Answer:"""
 
     def load_hellaswag(self, num_samples: int | None = None):
         from datasets import load_dataset
+
         print("Loading HellaSwag dataset...")
         ds = load_dataset("Rowan/hellaswag", split="validation", cache_dir=self.cache_dir)
         if num_samples:
@@ -176,6 +187,7 @@ Answer:"""
             # endings might be a string representation of a list
             if isinstance(endings, str):
                 import ast
+
                 endings = ast.literal_eval(endings)
 
             prompt = f"""Complete the following scenario. Reply with ONLY the letter (A, B, C, or D).
@@ -188,8 +200,7 @@ D) {endings[3]}
 
 What happens next?:"""
             result = inference_engine.generate(
-                [{"role": "user", "content": prompt}],
-                max_tokens=10, temperature=0.0
+                [{"role": "user", "content": prompt}], max_tokens=10, temperature=0.0
             )
 
             pred = result["response"].strip().upper()
@@ -201,11 +212,16 @@ What happens next?:"""
                 correct += 1
             total += 1
 
-            results.append({
-                "id": total, "question": ctx[:100],
-                "prediction": pred_letter, "expected": expected,
-                "correct": is_correct, "activity": activity
-            })
+            results.append(
+                {
+                    "id": total,
+                    "question": ctx[:100],
+                    "prediction": pred_letter,
+                    "expected": expected,
+                    "correct": is_correct,
+                    "activity": activity,
+                }
+            )
 
         return {
             "benchmark": "hellaswag",
@@ -221,8 +237,11 @@ What happens next?:"""
 
     def load_arc(self, num_samples: int | None = None):
         from datasets import load_dataset
+
         print("Loading ARC dataset...")
-        ds = load_dataset("allenai/ai2_arc", "ARC-Challenge", split="test", cache_dir=self.cache_dir)
+        ds = load_dataset(
+            "allenai/ai2_arc", "ARC-Challenge", split="test", cache_dir=self.cache_dir
+        )
         if num_samples:
             ds = ds.select(range(min(num_samples, len(ds))))
         return ds
@@ -240,6 +259,7 @@ What happens next?:"""
             # Parse choices if it's a string
             if isinstance(choices_dict, str):
                 import ast
+
                 choices_dict = ast.literal_eval(choices_dict)
             labels = choices_dict["label"]
             texts = choices_dict["text"]
@@ -254,8 +274,7 @@ Question: {question}
 
 Answer:"""
             result = inference_engine.generate(
-                [{"role": "user", "content": prompt}],
-                max_tokens=10, temperature=0.0
+                [{"role": "user", "content": prompt}], max_tokens=10, temperature=0.0
             )
 
             pred = result["response"].strip().upper()
@@ -266,11 +285,15 @@ Answer:"""
                 correct += 1
             total += 1
 
-            results.append({
-                "id": total, "question": question[:100],
-                "prediction": pred_letter, "expected": answer,
-                "correct": is_correct,
-            })
+            results.append(
+                {
+                    "id": total,
+                    "question": question[:100],
+                    "prediction": pred_letter,
+                    "expected": answer,
+                    "correct": is_correct,
+                }
+            )
 
         return {
             "benchmark": "arc_challenge",
@@ -286,8 +309,11 @@ Answer:"""
 
     def load_truthfulqa(self, num_samples: int | None = None):
         from datasets import load_dataset
+
         print("Loading TruthfulQA dataset...")
-        ds = load_dataset("truthfulqa/truthful_qa", "generation", split="validation", cache_dir=self.cache_dir)
+        ds = load_dataset(
+            "truthfulqa/truthful_qa", "generation", split="validation", cache_dir=self.cache_dir
+        )
         if num_samples:
             ds = ds.select(range(min(num_samples, len(ds))))
         return ds
@@ -307,9 +333,11 @@ Answer:"""
             # Parse if string
             if isinstance(correct_answers, str):
                 import ast
+
                 correct_answers = ast.literal_eval(correct_answers)
             if isinstance(incorrect_answers, str):
                 import ast
+
                 incorrect_answers = ast.literal_eval(incorrect_answers)
 
             prompt = f"""Answer the following question truthfully. Be concise.
@@ -318,8 +346,7 @@ Question: {question}
 
 Answer:"""
             result = inference_engine.generate(
-                [{"role": "user", "content": prompt}],
-                max_tokens=100, temperature=0.0
+                [{"role": "user", "content": prompt}], max_tokens=100, temperature=0.0
             )
 
             pred = result["response"].strip().lower()
@@ -334,12 +361,15 @@ Answer:"""
                 correct += 1
             total += 1
 
-            results.append({
-                "id": total, "question": question[:100],
-                "prediction": result["response"][:200],
-                "correct_answers": correct_answers[:3],
-                "is_truthful": is_truthful,
-            })
+            results.append(
+                {
+                    "id": total,
+                    "question": question[:100],
+                    "prediction": result["response"][:200],
+                    "correct_answers": correct_answers[:3],
+                    "is_truthful": is_truthful,
+                }
+            )
 
         return {
             "benchmark": "truthfulqa",
@@ -355,6 +385,7 @@ Answer:"""
 
     def load_gsm8k(self, num_samples: int | None = None):
         from datasets import load_dataset
+
         print("Loading GSM8K dataset...")
         ds = load_dataset("openai/gsm8k", "main", split="test", cache_dir=self.cache_dir)
         if num_samples:
@@ -380,8 +411,7 @@ Question: {question}
 
 Solution:"""
             result = inference_engine.generate(
-                [{"role": "user", "content": prompt}],
-                max_tokens=256, temperature=0.0
+                [{"role": "user", "content": prompt}], max_tokens=256, temperature=0.0
             )
 
             pred = result["response"].strip()
@@ -401,11 +431,15 @@ Solution:"""
                 correct += 1
             total += 1
 
-            results.append({
-                "id": total, "question": question[:100],
-                "prediction": pred_num, "expected": expected,
-                "correct": is_correct,
-            })
+            results.append(
+                {
+                    "id": total,
+                    "question": question[:100],
+                    "prediction": pred_num,
+                    "expected": expected,
+                    "correct": is_correct,
+                }
+            )
 
         return {
             "benchmark": "gsm8k",
@@ -421,8 +455,11 @@ Solution:"""
 
     def load_winogrande(self, num_samples: int | None = None):
         from datasets import load_dataset
+
         print("Loading Winogrande dataset...")
-        ds = load_dataset("allenai/winogrande", "winogrande_xl", split="validation", cache_dir=self.cache_dir)
+        ds = load_dataset(
+            "allenai/winogrande", "winogrande_xl", split="validation", cache_dir=self.cache_dir
+        )
         if num_samples:
             ds = ds.select(range(min(num_samples, len(ds))))
         return ds
@@ -451,8 +488,7 @@ Option 2: {option2}
 
 Which option fits better? Reply with ONLY the number (1 or 2):"""
             result = inference_engine.generate(
-                [{"role": "user", "content": prompt}],
-                max_tokens=10, temperature=0.0
+                [{"role": "user", "content": prompt}], max_tokens=10, temperature=0.0
             )
 
             pred = result["response"].strip()
@@ -463,11 +499,15 @@ Which option fits better? Reply with ONLY the number (1 or 2):"""
                 correct += 1
             total += 1
 
-            results.append({
-                "id": total, "question": sentence[:100],
-                "prediction": pred_num, "expected": answer,
-                "correct": is_correct,
-            })
+            results.append(
+                {
+                    "id": total,
+                    "question": sentence[:100],
+                    "prediction": pred_num,
+                    "expected": answer,
+                    "correct": is_correct,
+                }
+            )
 
         return {
             "benchmark": "winogrande",
@@ -481,8 +521,9 @@ Which option fits better? Reply with ONLY the number (1 or 2):"""
     # RUN ALL
     # ══════════════════════════════════════════════════════════════
 
-    def run_all(self, inference_engine, num_samples: int = 100,
-                benchmarks: list | None = None) -> dict:
+    def run_all(
+        self, inference_engine, num_samples: int = 100, benchmarks: list | None = None
+    ) -> dict:
         """Run all benchmarks."""
         if benchmarks is None:
             benchmarks = ["mmlu", "hellaswag", "arc_challenge", "truthfulqa", "gsm8k", "winogrande"]
@@ -503,7 +544,9 @@ Which option fits better? Reply with ONLY the number (1 or 2):"""
                 try:
                     result = evaluators[bench_name](inference_engine, num_samples)
                     all_results[bench_name] = result
-                    print(f"  {bench_name}: {result['accuracy']}% ({result['correct']}/{result['total']})")
+                    print(
+                        f"  {bench_name}: {result['accuracy']}% ({result['correct']}/{result['total']})"
+                    )
                 except Exception as e:  # noqa: BLE001
                     print(f"  {bench_name}: ERROR - {e}")
                     all_results[bench_name] = {"error": str(e)}

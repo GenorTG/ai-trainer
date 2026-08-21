@@ -28,6 +28,7 @@ class RAGSettings:
     Used as Settings.rag so callers can access .store_path, .embedding_model,
     .min_score with full type information (instead of dict[str, Any]).
     """
+
     store_path: str = "data/rag_store"
     enabled: bool = True
     chunk_size: int = 512
@@ -42,12 +43,14 @@ class Settings:
     host: str = "0.0.0.0"
     port: int = 7860
     debug: bool = False
-    model_dirs: list = field(default_factory=lambda: [
-        os.path.expanduser("~/1TB-SAMSUNG/Comfy/models"),
-        os.path.expanduser("~/gemma-finetune"),
-        os.path.expanduser("~/gemma-training"),
-        os.path.expanduser("~/.cache/huggingface/hub"),
-    ])
+    model_dirs: list = field(
+        default_factory=lambda: [
+            os.path.expanduser("~/1TB-SAMSUNG/Comfy/models"),
+            os.path.expanduser("~/gemma-finetune"),
+            os.path.expanduser("~/gemma-training"),
+            os.path.expanduser("~/.cache/huggingface/hub"),
+        ]
+    )
     default_lora_rank: int = 64
     default_lr: float = 8e-5
     default_epochs: int = 4
@@ -59,5 +62,5 @@ class Settings:
     rag_embedding_model: str = "all-MiniLM-L6-v2"
     rag: RAGSettings = field(default_factory=RAGSettings)
 
-settings = Settings()
 
+settings = Settings()

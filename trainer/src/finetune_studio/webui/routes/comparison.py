@@ -16,6 +16,7 @@ async def compare_load(request: Request):
         return {"error": "No path provided"}
     try:
         from finetune_studio.benchmarks.comparison import comparator
+
         comparator.load_model(name, path)
         return {"status": "loaded", "name": name, "models": list(comparator.engines.keys())}
     except Exception as e:  # noqa: BLE001
@@ -33,6 +34,7 @@ async def compare_run(request: Request):
         return {"error": "No test suite provided"}
 
     from finetune_studio.benchmarks.comparison import comparator
+
     if not comparator.engines:
         return {"error": "No models loaded. Use /compare/load first."}
 
@@ -44,6 +46,7 @@ async def compare_run(request: Request):
 async def compare_cleanup():
     """Unload all comparison models."""
     from finetune_studio.benchmarks.comparison import comparator
+
     comparator.cleanup()
     return {"status": "cleaned", "models": []}
 
@@ -88,15 +91,18 @@ async def rag_chat(request: Request):
     # Augment messages with context
     augmented_messages = []
     if context:
-        augmented_messages.append({
-            "role": "system",
-            "content": f"Based on the following documents:\n\n{context}\n\nAnswer the question using this information when relevant.",
-        })
+        augmented_messages.append(
+            {
+                "role": "system",
+                "content": f"Based on the following documents:\n\n{context}\n\nAnswer the question using this information when relevant.",
+            }
+        )
 
     augmented_messages.extend(messages)
 
     # Generate response
     from finetune_studio.webui.app import inference_engine
+
     if not inference_engine or inference_engine.model is None:
         return {"error": "No model loaded"}
 
@@ -110,7 +116,8 @@ async def rag_chat(request: Request):
         "response": result if isinstance(result, str) else result.get("response", str(result)),
         "sources": [
             {"text": r.text[:200], "score": round(r.score, 3), "source": r.source}
-            for r in results if r.score >= settings.rag.min_score
+            for r in results
+            if r.score >= settings.rag.min_score
         ],
         "chunks_retrieved": len([r for r in results if r.score >= settings.rag.min_score]),
     }

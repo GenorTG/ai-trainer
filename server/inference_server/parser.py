@@ -52,7 +52,7 @@ def _extract_json_args(text):
         except Exception:  # noqa: BLE001, S110
             pass
 
-    inner = re.search(r'arguments:\{(.+)\}', cleaned)
+    inner = re.search(r"arguments:\{(.+)\}", cleaned)
     if inner:
         try:
             return json.loads("{" + inner.group(1) + "}")
@@ -67,8 +67,15 @@ def _extract_json_args(text):
 
 def parse_tool_call(response):
     text = response.strip()
-    for artifact in ["<|channel>thought", "</start_of_turn>", "<start_of_turn>model\n",
-                      "<|end|>", "end_of_turn>", "<end_of_turn>", "model\n"]:
+    for artifact in [
+        "<|channel>thought",
+        "</start_of_turn>",
+        "<start_of_turn>model\n",
+        "<|end|>",
+        "end_of_turn>",
+        "<end_of_turn>",
+        "model\n",
+    ]:
         text = text.replace(artifact, "")
     text = text.strip()
 
@@ -81,15 +88,21 @@ def parse_tool_call(response):
                 name = item.get("name", "")
                 args = item.get("args", item.get("arguments", item.get("parameters", {})))
                 if isinstance(args, str):
-                    try: args = json.loads(args)
+                    try:
+                        args = json.loads(args)
                     except Exception:  # noqa: BLE001
                         args = {}
                 if name:
-                    return ToolCall(name=name, arguments=args or {}, raw=text, format_detected="tool_calls_array")
+                    return ToolCall(
+                        name=name,
+                        arguments=args or {},
+                        raw=text,
+                        format_detected="tool_calls_array",
+                    )
         except Exception:  # noqa: BLE001, S110
             pass
 
-    match = re.search(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL)
+    match = re.search(r"<tool_call>(.*?)</tool_call>", text, re.DOTALL)
     if match:
         content = match.group(1).strip()
         try:
@@ -97,15 +110,18 @@ def parse_tool_call(response):
             name = data.get("name", data.get("tool", ""))
             args = data.get("arguments", data.get("args", {}))
             if isinstance(args, str):
-                try: args = json.loads(args)
+                try:
+                    args = json.loads(args)
                 except Exception:  # noqa: BLE001
                     args = {}
             if name:
-                return ToolCall(name=name, arguments=args or {}, raw=text, format_detected="xml_tag")
+                return ToolCall(
+                    name=name, arguments=args or {}, raw=text, format_detected="xml_tag"
+                )
         except Exception:  # noqa: BLE001, S110
             pass
 
-    match = re.search(r'<\|tool_call\|>\s*call:(\w+)\s*\{(.+?)\}\s*<tool_call\|>', text, re.DOTALL)
+    match = re.search(r"<\|tool_call\|>\s*call:(\w+)\s*\{(.+?)\}\s*<tool_call\|>", text, re.DOTALL)
     if match:
         name = match.group(1)
         args_str = match.group(2).strip()
@@ -115,18 +131,35 @@ def parse_tool_call(response):
     try:
         data = json.loads(text)
         if isinstance(data, dict):
-            name = (data.get("name") or data.get("tool") or data.get("tool_name") or data.get("tool_call") or "")
-            args = (data.get("arguments") or data.get("args") or data.get("parameters") or data.get("tool_call_args") or {})
+            name = (
+                data.get("name")
+                or data.get("tool")
+                or data.get("tool_name")
+                or data.get("tool_call")
+                or ""
+            )
+            args = (
+                data.get("arguments")
+                or data.get("args")
+                or data.get("parameters")
+                or data.get("tool_call_args")
+                or {}
+            )
             if isinstance(args, str):
-                try: args = json.loads(args)
+                try:
+                    args = json.loads(args)
                 except Exception:  # noqa: BLE001
                     args = {}
             if name:
                 fmt = "json_object"
-                if "tool_calls" in data: fmt = "tool_calls_array"
-                elif "tool_name" in data: fmt = "tool_name_key"
-                elif "tool_call" in data: fmt = "legacy_tool_call"
-                elif "tool" in data and "arguments" in data: fmt = "tool_key"
+                if "tool_calls" in data:
+                    fmt = "tool_calls_array"
+                elif "tool_name" in data:
+                    fmt = "tool_name_key"
+                elif "tool_call" in data:
+                    fmt = "legacy_tool_call"
+                elif "tool" in data and "arguments" in data:
+                    fmt = "tool_key"
                 return ToolCall(name=name, arguments=args or {}, raw=text, format_detected=fmt)
     except Exception:  # noqa: BLE001, S110
         pass
@@ -137,7 +170,8 @@ def parse_tool_call(response):
         args_match = re.search(r'"arguments"\s*:\s*(\{[^}]+\})', text)
         args = {}
         if args_match:
-            try: args = json.loads(args_match.group(1))
+            try:
+                args = json.loads(args_match.group(1))
             except Exception:  # noqa: BLE001, S110
                 pass
         return ToolCall(name=name, arguments=args, raw=text, format_detected="function_format")
@@ -149,7 +183,9 @@ def parse_tool_call(response):
             name = data.get("name", data.get("tool", ""))
             args = data.get("arguments", data.get("args", {}))
             if name:
-                return ToolCall(name=name, arguments=args or {}, raw=text, format_detected="regex_extract")
+                return ToolCall(
+                    name=name, arguments=args or {}, raw=text, format_detected="regex_extract"
+                )
         except Exception:  # noqa: BLE001, S110
             pass
 
@@ -158,18 +194,26 @@ def parse_tool_call(response):
 
 def parse_multiple_tool_calls(text):
     calls = []
-    for match in re.finditer(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL):
+    for match in re.finditer(r"<tool_call>(.*?)</tool_call>", text, re.DOTALL):
         content = match.group(1).strip()
         try:
             data = json.loads(content)
             name = data.get("name", data.get("tool", ""))
             args = data.get("arguments", data.get("args", {}))
             if isinstance(args, str):
-                try: args = json.loads(args)
+                try:
+                    args = json.loads(args)
                 except Exception:  # noqa: BLE001
                     args = {}
             if name:
-                calls.append(ToolCall(name=name, arguments=args or {}, raw=match.group(0), format_detected="xml_tag"))
+                calls.append(
+                    ToolCall(
+                        name=name,
+                        arguments=args or {},
+                        raw=match.group(0),
+                        format_detected="xml_tag",
+                    )
+                )
         except Exception:  # noqa: BLE001, S110
             pass
 
@@ -181,11 +225,19 @@ def parse_multiple_tool_calls(text):
                 name = item.get("name", "")
                 args = item.get("args", item.get("arguments", {}))
                 if isinstance(args, str):
-                    try: args = json.loads(args)
+                    try:
+                        args = json.loads(args)
                     except Exception:  # noqa: BLE001
                         args = {}
                 if name:
-                    calls.append(ToolCall(name=name, arguments=args or {}, raw=text, format_detected="tool_calls_array"))
+                    calls.append(
+                        ToolCall(
+                            name=name,
+                            arguments=args or {},
+                            raw=text,
+                            format_detected="tool_calls_array",
+                        )
+                    )
         except Exception:  # noqa: BLE001, S110
             pass
 

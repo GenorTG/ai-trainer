@@ -29,26 +29,30 @@ async def training_events(engine):
     while engine.state.status in ("loading", "training", "saving"):
         if engine.state.current_step != last_step or engine.state.status != "training":
             last_step = engine.state.current_step
-            data = json.dumps({
-                "status": engine.state.status,
-                "step": engine.state.current_step,
-                "total_steps": engine.state.total_steps,
-                "loss": engine.state.loss,
-                "learning_rate": engine.state.learning_rate,
-                "epoch": engine.state.epoch,
-                "elapsed": engine.state.elapsed,
-                "eta": engine.state.eta,
-                "message": engine.state.message,
-            })
+            data = json.dumps(
+                {
+                    "status": engine.state.status,
+                    "step": engine.state.current_step,
+                    "total_steps": engine.state.total_steps,
+                    "loss": engine.state.loss,
+                    "learning_rate": engine.state.learning_rate,
+                    "epoch": engine.state.epoch,
+                    "elapsed": engine.state.elapsed,
+                    "eta": engine.state.eta,
+                    "message": engine.state.message,
+                }
+            )
             yield f"data: {data}\n\n"
         await asyncio.sleep(0.5)
-    data = json.dumps({
-        "status": engine.state.status,
-        "step": engine.state.current_step,
-        "total_steps": engine.state.total_steps,
-        "loss": engine.state.loss,
-        "message": engine.state.message,
-        "error": engine.state.error,
-        "log_lines": engine.state.log_lines[-20:],
-    })
+    data = json.dumps(
+        {
+            "status": engine.state.status,
+            "step": engine.state.current_step,
+            "total_steps": engine.state.total_steps,
+            "loss": engine.state.loss,
+            "message": engine.state.message,
+            "error": engine.state.error,
+            "log_lines": engine.state.log_lines[-20:],
+        }
+    )
     yield f"data: {data}\n\n"

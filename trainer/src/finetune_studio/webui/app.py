@@ -31,6 +31,7 @@ training_engine = TrainingEngine()
 inference_engine = InferenceEngine()
 discovered_models: list[str] = []
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global discovered_models
@@ -38,6 +39,7 @@ async def lifespan(app: FastAPI):
     discovered_models = scan_models(settings.model_dirs)
     print(f"Found {len(discovered_models)} models")
     yield
+
 
 app = FastAPI(title="Finetune Studio", version="0.1.0", lifespan=lifespan)
 

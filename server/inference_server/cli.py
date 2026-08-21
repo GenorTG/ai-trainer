@@ -20,7 +20,9 @@ import argparse
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="inference-server", description="Portable Inference Server with RAG")
+    parser = argparse.ArgumentParser(
+        prog="inference-server", description="Portable Inference Server with RAG"
+    )
     parser.add_argument("--config", default="config.yaml", help="Config file path")
     parser.add_argument("--host", help="Override host")
     parser.add_argument("--port", type=int, help="Override port")
@@ -32,6 +34,7 @@ def main():
 
     # Load config
     from .config import load_config
+
     config = load_config(args.config)
 
     # Apply overrides
@@ -47,6 +50,7 @@ def main():
     # Ingest mode
     if args.ingest:
         from .rag import DocumentIngestor, RAGStore
+
         store = RAGStore(config.rag.store_path)
         ingestor = DocumentIngestor(store, config.rag.chunk_size, config.rag.chunk_overlap)
         result = ingestor.ingest_directory(args.ingest, embedding_model=config.rag.embedding_model)
@@ -58,6 +62,7 @@ def main():
 
     # Start server
     import uvicorn
+
     uvicorn.run(
         "src.server:app",
         host=config.server.host,

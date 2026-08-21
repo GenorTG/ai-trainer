@@ -123,18 +123,31 @@ def main():
     p_cmp.add_argument("--temperature", type=float, default=0.7)
     p_cmp.add_argument("--json", action="store_true", help="Output as JSON")
     p_cmp.add_argument("--report", help="Save report to file")
-    p_cmp.add_argument("--real", action="store_true", default=True, help="Use real HuggingFace datasets")
+    p_cmp.add_argument(
+        "--real", action="store_true", default=True, help="Use real HuggingFace datasets"
+    )
 
     # ── benchmark ──
     p_bench = sub.add_parser("benchmark", help="Run industry-standard benchmarks")
     p_bench.add_argument("model", help="Path to model (GGUF or safetensors)")
-    p_bench.add_argument("--suite", default="all", help="Benchmark suite: all, mmlu, hellaswag, arc, truthfulqa, gsm8k, winogrande (or comma-separated)")
-    p_bench.add_argument("--num-samples", type=int, default=100, help="Number of samples per benchmark (default: 100)")
+    p_bench.add_argument(
+        "--suite",
+        default="all",
+        help="Benchmark suite: all, mmlu, hellaswag, arc, truthfulqa, gsm8k, winogrande (or comma-separated)",
+    )
+    p_bench.add_argument(
+        "--num-samples",
+        type=int,
+        default=100,
+        help="Number of samples per benchmark (default: 100)",
+    )
     p_bench.add_argument("--max-tokens", type=int, default=10)
     p_bench.add_argument("--temperature", type=float, default=0.0)
     p_bench.add_argument("--json", action="store_true", help="Output as JSON")
     p_bench.add_argument("--report", help="Save report to file")
-    p_bench.add_argument("--real", action="store_true", default=True, help="Use real HuggingFace datasets")
+    p_bench.add_argument(
+        "--real", action="store_true", default=True, help="Use real HuggingFace datasets"
+    )
 
     # ── analyze (data quality) ──
     p_analyze = sub.add_parser("analyze", help="Analyze training data quality")
@@ -147,9 +160,17 @@ def main():
     p_aug = sub.add_parser("augment", help="Augment training data to fix weaknesses")
     p_aug.add_argument("data", help="Path to training data (JSONL)")
     p_aug.add_argument("--output", required=True, help="Output augmented data")
-    p_aug.add_argument("--type", default="all", help="Augmentation type: knowledge, refusal, language, hallucination, persona, all")
-    p_aug.add_argument("--count", type=int, default=50, help="Number of examples to generate per type")
-    p_aug.add_argument("--ratio", type=float, default=0.7, help="Persona ratio for data mixing (0.0-1.0)")
+    p_aug.add_argument(
+        "--type",
+        default="all",
+        help="Augmentation type: knowledge, refusal, language, hallucination, persona, all",
+    )
+    p_aug.add_argument(
+        "--count", type=int, default=50, help="Number of examples to generate per type"
+    )
+    p_aug.add_argument(
+        "--ratio", type=float, default=0.7, help="Persona ratio for data mixing (0.0-1.0)"
+    )
 
     # ── optimize (config recommendation) ──
     p_opt = sub.add_parser("optimize", help="Get training config recommendations")
@@ -160,7 +181,9 @@ def main():
     p_opt.add_argument("--json", action="store_true")
 
     # ── validate (hallucination check) ──
-    p_val_h = sub.add_parser("validate-hallucination", help="Check training data for hallucination risks")
+    p_val_h = sub.add_parser(
+        "validate-hallucination", help="Check training data for hallucination risks"
+    )
     p_val_h.add_argument("data", help="Path to training data (JSONL)")
     p_val_h.add_argument("--json", action="store_true")
 
@@ -204,13 +227,25 @@ def main():
 def cmd_models(args):
     from finetune_studio.config import settings
     from finetune_studio.models.registry import scan_models
+
     dirs = settings.model_dirs + (args.dirs or [])
     models = scan_models(dirs)
     if args.json:
-        print(json.dumps([{
-            "name": m.name, "path": m.path, "format": m.format,
-            "size_gb": m.size_gb, "architecture": m.architecture,
-        } for m in models], indent=2))
+        print(
+            json.dumps(
+                [
+                    {
+                        "name": m.name,
+                        "path": m.path,
+                        "format": m.format,
+                        "size_gb": m.size_gb,
+                        "architecture": m.architecture,
+                    }
+                    for m in models
+                ],
+                indent=2,
+            )
+        )
     else:
         if not models:
             print("No models found.")
@@ -238,10 +273,14 @@ def cmd_train(args):
     print(f"Loaded {len(data)} examples from {args.data}")
 
     config = TrainingConfig(
-        model_path=args.model, output_dir=args.output,
-        lora_rank=args.lora_rank, learning_rate=args.lr,
-        num_epochs=args.epochs, batch_size=args.batch,
-        max_seq_length=args.max_seq, unsloth=not args.no_unsloth,
+        model_path=args.model,
+        output_dir=args.output,
+        lora_rank=args.lora_rank,
+        learning_rate=args.lr,
+        num_epochs=args.epochs,
+        batch_size=args.batch,
+        max_seq_length=args.max_seq,
+        unsloth=not args.no_unsloth,
     )
 
     engine = TrainingEngine()
@@ -250,7 +289,9 @@ def cmd_train(args):
         if state.status == "training":
             pct = (state.current_step / max(state.total_steps, 1)) * 100
             bar = "█" * int(pct / 2) + "░" * (50 - int(pct / 2))
-            sys.stdout.write(f"\r[{bar}] {pct:.0f}% | Step {state.current_step}/{state.total_steps} | Loss: {state.loss} | ETA: {state.eta}s")
+            sys.stdout.write(
+                f"\r[{bar}] {pct:.0f}% | Step {state.current_step}/{state.total_steps} | Loss: {state.loss} | ETA: {state.eta}s"
+            )
             sys.stdout.flush()
         elif state.status == "done":
             print(f"\n\nTraining complete! Output: {args.output}")
@@ -293,7 +334,8 @@ def cmd_test(args):
 
         response = engine.generate(
             [{"role": "user", "content": user_input}],
-            max_tokens=args.max_tokens, temperature=args.temperature,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
         )
         print(f"AI: {response}\n")
 
@@ -323,11 +365,24 @@ def cmd_suite(args):
     scores = score_results(results)
 
     if args.json:
-        print(json.dumps({
-            "results": [{"name": r.test_name, "passed": r.passed, "response": r.response,
-                         "time_ms": r.time_ms, "error": r.error} for r in results],
-            "scores": scores,
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "results": [
+                        {
+                            "name": r.test_name,
+                            "passed": r.passed,
+                            "response": r.response,
+                            "time_ms": r.time_ms,
+                            "error": r.error,
+                        }
+                        for r in results
+                    ],
+                    "scores": scores,
+                },
+                indent=2,
+            )
+        )
     else:
         for r in results:
             icon = "✅" if r.passed else "❌"
@@ -336,7 +391,7 @@ def cmd_suite(args):
                 print(f"   Error: {r.error}")
             print(f"   {r.response[:120]}{'...' if len(r.response) > 120 else ''}\n")
 
-        print(f"{'='*50}")
+        print(f"{'=' * 50}")
         print(f"Pass rate: {scores['pass_rate']}% ({scores['passed']}/{scores['total']})")
 
     engine.unload()
@@ -344,6 +399,7 @@ def cmd_suite(args):
 
 def cmd_validate(args):
     from finetune_studio.data.validator import validate_file
+
     for f in args.files:
         report = validate_file(f)
         icon = "✅" if report["valid"] else "❌"
@@ -385,9 +441,12 @@ def cmd_convert(args):
 
 def cmd_webui(args):
     import uvicorn
+
     uvicorn.run(
         "finetune_studio.webui.app:app",
-        host=args.host, port=args.port, reload=args.reload,
+        host=args.host,
+        port=args.port,
+        reload=args.reload,
     )
 
 
@@ -397,6 +456,7 @@ def cmd_rag(args):
         sys.exit(1)
 
     from finetune_studio.rag.manager import RAGManager
+
     manager = RAGManager(args.store)
 
     if args.rag_command == "ingest":
@@ -409,16 +469,25 @@ def cmd_rag(args):
     elif args.rag_command == "query":
         results = manager.store.search(args.question, top_k=args.top_k)
         if args.json:
-            print(json.dumps([{
-                "text": r.text, "score": round(r.score, 3),
-                "source": r.metadata.get("source", "unknown"),
-                "document_id": r.document_id,
-            } for r in results], indent=2))
+            print(
+                json.dumps(
+                    [
+                        {
+                            "text": r.text,
+                            "score": round(r.score, 3),
+                            "source": r.metadata.get("source", "unknown"),
+                            "document_id": r.document_id,
+                        }
+                        for r in results
+                    ],
+                    indent=2,
+                )
+            )
         else:
             if not results:
                 print("No results found.")
             for i, r in enumerate(results):
-                print(f"\n--- Result {i+1} (score: {r.score:.3f}) ---")
+                print(f"\n--- Result {i + 1} (score: {r.score:.3f}) ---")
                 print(f"Source: {r.metadata.get('source', 'unknown')}")
                 print(f"Doc: {r.document_id}")
                 print(f"{r.text[:300]}{'...' if len(r.text) > 300 else ''}")
@@ -431,7 +500,9 @@ def cmd_rag(args):
             if not docs:
                 print("No documents in RAG store.")
             for doc in docs:
-                print(f"  {doc['document_id']}: {doc['chunk_count']} chunks, sources: {doc['sources']}")
+                print(
+                    f"  {doc['document_id']}: {doc['chunk_count']} chunks, sources: {doc['sources']}"
+                )
 
     elif args.rag_command == "remove":
         result = manager.remove_document(args.document_id)
@@ -487,11 +558,13 @@ def cmd_compare(args):
     if args.json:
         print(json_mod.dumps(result, indent=2))
     else:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("COMPARISON RESULTS")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         for model, stats in result["summary"].items():
-            print(f"  {model}: {stats['accuracy']}% ({stats['passed']}/{stats['total']}) | avg {stats['avg_time_ms']}ms")
+            print(
+                f"  {model}: {stats['accuracy']}% ({stats['passed']}/{stats['total']}) | avg {stats['avg_time_ms']}ms"
+            )
 
     if args.report:
         with open(args.report, "w") as f:
@@ -533,9 +606,9 @@ def cmd_benchmark(args):
     )
 
     # Print summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("BENCHMARK RESULTS")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Model: {os.path.basename(args.model)}")
     print(f"Samples per benchmark: {args.num_samples}")
     print(f"Temperature: {args.temperature}")
@@ -548,7 +621,9 @@ def cmd_benchmark(args):
             print(f"  {name}: {data['accuracy']}% ({data['correct']}/{data['total']})")
 
     summary = result["summary"]
-    print(f"\nOverall: {summary['total_correct']}/{summary['total_questions']} = {summary['overall_accuracy']}%")
+    print(
+        f"\nOverall: {summary['total_correct']}/{summary['total_questions']} = {summary['overall_accuracy']}%"
+    )
 
     if args.json:
         print(f"\n{json_mod.dumps(result, indent=2)}")
@@ -572,24 +647,30 @@ def cmd_analyze(args):
     analyzer = DataQualityAnalyzer()
     result = analyzer.analyze(args.data)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("DATA QUALITY REPORT")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"File: {result['file']}")
     print(f"Total examples: {result['total_examples']}")
     print(f"Severity: {result['severity'].upper()}")
     print()
 
-    if result['stats']:
+    if result["stats"]:
         print("Statistics:")
-        for k, v in result['stats'].items():
+        for k, v in result["stats"].items():
             print(f"  {k}: {v}")
         print()
 
-    if result['issues']:
+    if result["issues"]:
         print("Issues:")
-        for issue in result['issues']:
-            icon = "🔴" if issue['severity'] == "high" else "🟡" if issue['severity'] == "medium" else "🟢"
+        for issue in result["issues"]:
+            icon = (
+                "🔴"
+                if issue["severity"] == "high"
+                else "🟡"
+                if issue["severity"] == "medium"
+                else "🟢"
+            )
             print(f"  {icon} [{issue['severity'].upper()}] {issue['message']}")
         print()
 
@@ -629,19 +710,19 @@ def cmd_augment(args):
     analysis = analyzer.analyze(args.data)
 
     weaknesses = []
-    for issue in analysis['issues']:
-        if 'language' in issue.get('type', ''):
-            weaknesses.append('language_balance')
-        elif 'hallucination' in issue.get('type', ''):
-            weaknesses.append('hallucination_guard')
-        elif 'empty' in issue.get('type', ''):
-            weaknesses.append('refusal')
+    for issue in analysis["issues"]:
+        if "language" in issue.get("type", ""):
+            weaknesses.append("language_balance")
+        elif "hallucination" in issue.get("type", ""):
+            weaknesses.append("hallucination_guard")
+        elif "empty" in issue.get("type", ""):
+            weaknesses.append("refusal")
 
     # Add default augmentations
-    if args.type == 'all':
-        weaknesses.extend(['knowledge', 'refusal'])
+    if args.type == "all":
+        weaknesses.extend(["knowledge", "refusal"])
     else:
-        weaknesses.extend(args.type.split(','))
+        weaknesses.extend(args.type.split(","))
 
     weaknesses = list(set(weaknesses))
     print(f"Augmenting for: {', '.join(weaknesses)}")
@@ -653,8 +734,8 @@ def cmd_augment(args):
     print(f"Augmented dataset: {len(data)} -> {len(augmented)} examples")
 
     # Save
-    with open(args.output, 'w') as f:
-        f.writelines(json_mod.dumps(item, ensure_ascii=False) + '\n' for item in augmented)
+    with open(args.output, "w") as f:
+        f.writelines(json_mod.dumps(item, ensure_ascii=False) + "\n" for item in augmented)
 
     print(f"Saved to {args.output}")
 
@@ -680,19 +761,31 @@ def cmd_optimize(args):
     # Build current config
     current = {}
     if args.lr:
-        current['learning_rate'] = args.lr
+        current["learning_rate"] = args.lr
     if args.epochs:
-        current['num_epochs'] = args.epochs
+        current["num_epochs"] = args.epochs
     if args.lora_rank:
-        current['lora_rank'] = args.lora_rank
+        current["lora_rank"] = args.lora_rank
 
     optimizer = TrainingConfigOptimizer()
     recommendations = optimizer.analyze_and_recommend(data, current)
 
     if args.json:
-        print(json_mod.dumps([{'parameter': r.parameter, 'current': r.current_value,
-                             'recommended': r.recommended_value, 'reason': r.reason,
-                             'priority': r.priority} for r in recommendations], indent=2))
+        print(
+            json_mod.dumps(
+                [
+                    {
+                        "parameter": r.parameter,
+                        "current": r.current_value,
+                        "recommended": r.recommended_value,
+                        "reason": r.reason,
+                        "priority": r.priority,
+                    }
+                    for r in recommendations
+                ],
+                indent=2,
+            )
+        )
     else:
         print(optimizer.generate_report(recommendations))
 
@@ -747,10 +840,18 @@ def cmd_rag_test(args):
 
     if args.json:
         sources = rag.retrieve(args.question, args.top_k)
-        print(json.dumps({
-            "response": response,
-            "sources": [{"text": r.text[:200], "score": r.score, "source": r.metadata.get("source")} for r in sources],
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "response": response,
+                    "sources": [
+                        {"text": r.text[:200], "score": r.score, "source": r.metadata.get("source")}
+                        for r in sources
+                    ],
+                },
+                indent=2,
+            )
+        )
     else:
         print(f"\nAI: {response}")
         sources = rag.retrieve(args.question, args.top_k)

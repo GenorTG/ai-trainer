@@ -58,11 +58,18 @@ class HallucinationGuardrail:
         ]
 
         self.confidence_markers = [
-            "is", "are", "was", "were", "will", "has", "have",
+            "is",
+            "are",
+            "was",
+            "were",
+            "will",
+            "has",
+            "have",
         ]
 
-    def check_response(self, question: str, response: str,
-                       context: list | None = None) -> GuardrailResult:
+    def check_response(
+        self, question: str, response: str, context: list | None = None
+    ) -> GuardrailResult:
         """Check a response for potential hallucinations."""
         issues = []
         suggestions = []
@@ -87,14 +94,14 @@ class HallucinationGuardrail:
             suggestions.append("Verify the response is relevant")
 
         # Check for fabricated URLs
-        url_pattern = r'https?://[^\s]+'
+        url_pattern = r"https?://[^\s]+"
         urls = re.findall(url_pattern, response)
         if urls:
             issues.append(f"Contains URLs that may be fabricated: {urls[0]}")
             suggestions.append("Verify URLs are real")
 
         # Check for fabricated emails
-        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        email_pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
         emails = re.findall(email_pattern, response)
         if emails:
             issues.append(f"Contains email addresses that may be fabricated: {emails[0]}")
@@ -112,8 +119,9 @@ class HallucinationGuardrail:
         results = []
         for q, a in qa_pairs:
             result = self.check_response(q, a)
-            results.append({"question": q, "answer": a[:200],
-                          "passed": result.passed, "issues": result.issues})
+            results.append(
+                {"question": q, "answer": a[:200], "passed": result.passed, "issues": result.issues}
+            )
 
         passed = sum(1 for r in results if r["passed"])
         return {
@@ -134,7 +142,11 @@ class TrainingDataValidator:
             (r"\b\d+\.\d+\s*(million|billion)\b", "specific_number", "May be fabricated"),
             (r"(according to|study shows)", "citation", "Verify source exists"),
             (r"https?://[^\s]+", "url", "Verify URL is real"),
-            (r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "email", "Verify email is real"),
+            (
+                r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+                "email",
+                "Verify email is real",
+            ),
         ]
 
     def validate_response(self, response: str) -> list:
@@ -174,7 +186,6 @@ class TrainingDataValidator:
         if ratio > 0.1:
             return "MODERATE risk — verify specific claims in responses"
         return "LOW risk — dataset looks clean"
-
 
 
 # Alias for backwards compatibility with routes that use HallucinationGuard

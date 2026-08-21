@@ -26,6 +26,7 @@ from dataclasses import dataclass, field
 @dataclass
 class SamplerConfig:
     """All standard sampler parameters for LLM inference."""
+
     temperature: float = 0.7
     top_p: float = 0.9
     top_k: int = 40
@@ -72,13 +73,25 @@ class SamplerConfig:
 
 # Preset sampler configurations
 PRESETS = {
-    "deterministic": SamplerConfig(temperature=0.0, top_p=1.0, top_k=1, repeat_penalty=1.0, min_p=0.0),
+    "deterministic": SamplerConfig(
+        temperature=0.0, top_p=1.0, top_k=1, repeat_penalty=1.0, min_p=0.0
+    ),
     "balanced": SamplerConfig(temperature=0.7, top_p=0.9, top_k=40, repeat_penalty=1.1, min_p=0.05),
-    "creative": SamplerConfig(temperature=1.0, top_p=0.95, top_k=100, repeat_penalty=1.2, min_p=0.02),
-    "conservative": SamplerConfig(temperature=0.3, top_p=0.85, top_k=20, repeat_penalty=1.05, min_p=0.08),
-    "chris_ai_v20": SamplerConfig(temperature=0.45, top_p=0.9, top_k=30, repeat_penalty=1.02, min_p=0.02),
-    "chris_ai_v21": SamplerConfig(temperature=0.25, top_p=0.8, top_k=15, repeat_penalty=1.05, min_p=0.03),
-    "testing": SamplerConfig(temperature=0.0, top_p=1.0, top_k=1, repeat_penalty=1.0, min_p=0.0, max_tokens=256),
+    "creative": SamplerConfig(
+        temperature=1.0, top_p=0.95, top_k=100, repeat_penalty=1.2, min_p=0.02
+    ),
+    "conservative": SamplerConfig(
+        temperature=0.3, top_p=0.85, top_k=20, repeat_penalty=1.05, min_p=0.08
+    ),
+    "chris_ai_v20": SamplerConfig(
+        temperature=0.45, top_p=0.9, top_k=30, repeat_penalty=1.02, min_p=0.02
+    ),
+    "chris_ai_v21": SamplerConfig(
+        temperature=0.25, top_p=0.8, top_k=15, repeat_penalty=1.05, min_p=0.03
+    ),
+    "testing": SamplerConfig(
+        temperature=0.0, top_p=1.0, top_k=1, repeat_penalty=1.0, min_p=0.0, max_tokens=256
+    ),
 }
 
 
@@ -89,10 +102,13 @@ def get_sampler(name: str = "balanced") -> SamplerConfig:
 
 def list_presets() -> dict:
     """List all preset samplers."""
-    return {name: {
-        "temperature": p.temperature,
-        "top_p": p.top_p,
-        "top_k": p.top_k,
-        "repeat_penalty": p.repeat_penalty,
-        "min_p": p.min_p,
-    } for name, p in PRESETS.items()}
+    return {
+        name: {
+            "temperature": p.temperature,
+            "top_p": p.top_p,
+            "top_k": p.top_k,
+            "repeat_penalty": p.repeat_penalty,
+            "min_p": p.min_p,
+        }
+        for name, p in PRESETS.items()
+    }

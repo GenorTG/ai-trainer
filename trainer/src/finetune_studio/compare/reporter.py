@@ -58,7 +58,9 @@ def generate_report(comparison_results: list, scored: dict, output_path: str | N
         if score.response:
             lines.append(f"  {score.test_name} [{score.source_name}]:")
             lines.append(f"    Total: {score.total_score} | Pass: {score.passed}")
-            lines.append(f"    Keywords: {score.keyword_score} | Length: {score.length_score} | Time: {score.time_ms}ms")
+            lines.append(
+                f"    Keywords: {score.keyword_score} | Length: {score.length_score} | Time: {score.time_ms}ms"
+            )
             if score.details.get("keyword_misses"):
                 lines.append(f"    Missing: {', '.join(score.details['keyword_misses'])}")
             if score.details.get("forbidden_hits"):

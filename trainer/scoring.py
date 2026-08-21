@@ -1,4 +1,5 @@
 """Industry-standard scoring methods for LLM benchmarks."""
+
 import re
 
 
@@ -15,27 +16,27 @@ def extract_mcq_answer(response: str, choices: list | None = None) -> str:
     response = response.strip()
 
     # Pattern 1: Direct letter at start
-    match = re.match(r'^([A-D])\b', response)
+    match = re.match(r"^([A-D])\b", response)
     if match:
         return match.group(1)
 
     # Pattern 2: Letter with common delimiters (B) or B. or B:
-    match = re.match(r'^([A-D])[\)\.\:\s]', response)
+    match = re.match(r"^([A-D])[\)\.\:\s]", response)
     if match:
         return match.group(1)
 
     # Pattern 3: "answer is X" or "the answer is X"
-    match = re.search(r'(?:the answer is|answer is|answer:?)\s*([A-D])', response, re.IGNORECASE)
+    match = re.search(r"(?:the answer is|answer is|answer:?)\s*([A-D])", response, re.IGNORECASE)
     if match:
         return match.group(1).upper()
 
     # Pattern 4: "X)" or "X." anywhere (first occurrence)
-    match = re.search(r'\b([A-D])[\)\.]', response)
+    match = re.search(r"\b([A-D])[\)\.]", response)
     if match:
         return match.group(1).upper()
 
     # Pattern 5: Just the letter anywhere
-    match = re.search(r'\b([A-D])\b', response)
+    match = re.search(r"\b([A-D])\b", response)
     if match:
         return match.group(1).upper()
 
@@ -62,22 +63,22 @@ def extract_math_answer(response: str, expected: str | None = None) -> str:
     if "####" in response:
         after_marker = response.split("####")[-1].strip()
         # Extract number from the text after ####
-        numbers = re.findall(r'[-+]?\d+\.?\d*', after_marker)
+        numbers = re.findall(r"[-+]?\d+\.?\d*", after_marker)
         if numbers:
             return numbers[-1].replace(",", "").strip()
 
     # Method 2: Look for boxed answer (LaTeX style)
-    match = re.search(r'\\boxed\{([^}]+)\}', response)
+    match = re.search(r"\\boxed\{([^}]+)\}", response)
     if match:
         return match.group(1).replace(",", "").strip()
 
     # Method 3: Look for "answer is X" or "= X"
-    match = re.search(r'(?:answer is|=)\s*([-+]?\d+\.?\d*)', response, re.IGNORECASE)
+    match = re.search(r"(?:answer is|=)\s*([-+]?\d+\.?\d*)", response, re.IGNORECASE)
     if match:
         return match.group(1).replace(",", "").strip()
 
     # Method 4: Last number in response
-    numbers = re.findall(r'[-+]?\d+\.?\d*', response)
+    numbers = re.findall(r"[-+]?\d+\.?\d*", response)
     if numbers:
         return numbers[-1].replace(",", "").strip()
 
@@ -96,7 +97,7 @@ def normalize_math_answer(answer: str) -> str:
     multipliers = {"million": "000000", "billion": "000000000", "trillion": "000000000000"}
     for word, mult in multipliers.items():
         if word in answer.lower():
-            num_match = re.search(r'(\d+\.?\d*)', answer)
+            num_match = re.search(r"(\d+\.?\d*)", answer)
             if num_match:
                 num = float(num_match.group(1))
                 return str(int(num * float("1" + mult)))
@@ -148,12 +149,12 @@ def score_winogrande(response: str, option1: str, option2: str) -> str:
         return "2"
 
     # Check for "option 1" or "option 2"
-    match = re.search(r'option\s*(\d)', response, re.IGNORECASE)
+    match = re.search(r"option\s*(\d)", response, re.IGNORECASE)
     if match:
         return match.group(1)
 
     # Check for any digit
-    match = re.search(r'\b(1|2)\b', response)
+    match = re.search(r"\b(1|2)\b", response)
     if match:
         return match.group(1)
 

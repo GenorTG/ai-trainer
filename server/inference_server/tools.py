@@ -40,22 +40,22 @@ def build_tools(rag_store: RAGStore, embedding_model: str = "all-MiniLM-L6-v2") 
                     "type": "object",
                     "properties": {
                         "query": {"type": "string", "description": "The search query"},
-                        "top_k": {"type": "integer", "description": "Number of results (default 5)"}
+                        "top_k": {
+                            "type": "integer",
+                            "description": "Number of results (default 5)",
+                        },
                     },
-                    "required": ["query"]
-                }
-            }
+                    "required": ["query"],
+                },
+            },
         },
         {
             "type": "function",
             "function": {
                 "name": "rag_list_documents",
                 "description": "List all documents currently in the knowledge base.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {}
-                }
-            }
+                "parameters": {"type": "object", "properties": {}},
+            },
         },
         {
             "type": "function",
@@ -67,9 +67,9 @@ def build_tools(rag_store: RAGStore, embedding_model: str = "all-MiniLM-L6-v2") 
                     "properties": {
                         "path": {"type": "string", "description": "Path to the document file"}
                     },
-                    "required": ["path"]
-                }
-            }
+                    "required": ["path"],
+                },
+            },
         },
         {
             "type": "function",
@@ -81,20 +81,17 @@ def build_tools(rag_store: RAGStore, embedding_model: str = "all-MiniLM-L6-v2") 
                     "properties": {
                         "document_id": {"type": "string", "description": "Document ID to remove"}
                     },
-                    "required": ["document_id"]
-                }
-            }
+                    "required": ["document_id"],
+                },
+            },
         },
         {
             "type": "function",
             "function": {
                 "name": "rag_stats",
                 "description": "Get statistics about the knowledge base (document count, chunk count).",
-                "parameters": {
-                    "type": "object",
-                    "properties": {}
-                }
-            }
+                "parameters": {"type": "object", "properties": {}},
+            },
         },
         {
             "type": "function",
@@ -106,9 +103,9 @@ def build_tools(rag_store: RAGStore, embedding_model: str = "all-MiniLM-L6-v2") 
                     "properties": {
                         "path": {"type": "string", "description": "Path to the document"}
                     },
-                    "required": ["path"]
-                }
-            }
+                    "required": ["path"],
+                },
+            },
         },
         {
             "type": "function",
@@ -118,17 +115,21 @@ def build_tools(rag_store: RAGStore, embedding_model: str = "all-MiniLM-L6-v2") 
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "content": {"type": "string", "description": "The fact/information to remember"}
+                        "content": {
+                            "type": "string",
+                            "description": "The fact/information to remember",
+                        }
                     },
-                    "required": ["content"]
-                }
-            }
+                    "required": ["content"],
+                },
+            },
         },
     ]
 
 
-def execute_tool(tool_name: str, arguments: dict, rag_store: RAGStore,
-                 embedding_model: str = "all-MiniLM-L6-v2") -> str:
+def execute_tool(
+    tool_name: str, arguments: dict, rag_store: RAGStore, embedding_model: str = "all-MiniLM-L6-v2"
+) -> str:
     """Execute a tool call and return the result."""
     try:
         if tool_name == "rag_search":
@@ -136,21 +137,34 @@ def execute_tool(tool_name: str, arguments: dict, rag_store: RAGStore,
             top_k = arguments.get("top_k", 5)
             results = rag_store.search(query, top_k=top_k, embedding_model=embedding_model)
             if not results:
-                return json.dumps({"results": [], "message": "No relevant documents found"}, ensure_ascii=False)
-            return json.dumps({
-                "results": [
-                    {"text": r.text, "score": round(r.score, 3), "source": r.source, "document_id": r.document_id}
-                    for r in results
-                ]
-            }, ensure_ascii=False)
+                return json.dumps(
+                    {"results": [], "message": "No relevant documents found"}, ensure_ascii=False
+                )
+            return json.dumps(
+                {
+                    "results": [
+                        {
+                            "text": r.text,
+                            "score": round(r.score, 3),
+                            "source": r.source,
+                            "document_id": r.document_id,
+                        }
+                        for r in results
+                    ]
+                },
+                ensure_ascii=False,
+            )
 
         elif tool_name == "rag_list_documents":
             docs = rag_store.list_documents()
-            return json.dumps({"documents": docs, "total_chunks": rag_store.count()}, ensure_ascii=False)
+            return json.dumps(
+                {"documents": docs, "total_chunks": rag_store.count()}, ensure_ascii=False
+            )
 
         elif tool_name == "rag_ingest_document":
             path = arguments.get("path", "")
             from .rag import DocumentIngestor
+
             ingestor = DocumentIngestor(rag_store)
             result = ingestor.ingest_file(path, embedding_model=embedding_model)
             return json.dumps(result, ensure_ascii=False)
@@ -158,14 +172,19 @@ def execute_tool(tool_name: str, arguments: dict, rag_store: RAGStore,
         elif tool_name == "rag_remove_document":
             doc_id = arguments.get("document_id", "")
             removed = rag_store.remove_document(doc_id)
-            return json.dumps({"document_id": doc_id, "chunks_removed": removed}, ensure_ascii=False)
+            return json.dumps(
+                {"document_id": doc_id, "chunks_removed": removed}, ensure_ascii=False
+            )
 
         elif tool_name == "rag_stats":
-            return json.dumps({
-                "total_chunks": rag_store.count(),
-                "total_documents": len(rag_store.list_documents()),
-                "documents": rag_store.list_documents(),
-            }, ensure_ascii=False)
+            return json.dumps(
+                {
+                    "total_chunks": rag_store.count(),
+                    "total_documents": len(rag_store.list_documents()),
+                    "documents": rag_store.list_documents(),
+                },
+                ensure_ascii=False,
+            )
 
         elif tool_name == "parse_document":
             path = arguments.get("path", "")
@@ -175,6 +194,7 @@ def execute_tool(tool_name: str, arguments: dict, rag_store: RAGStore,
         elif tool_name == "save_conversation_knowledge":
             content = arguments.get("content", "")
             import hashlib
+
             doc_id = hashlib.md5(f"memory:{content[:50]}".encode()).hexdigest()[:12]
             words = content.split()
             chunks = []
@@ -182,13 +202,25 @@ def execute_tool(tool_name: str, arguments: dict, rag_store: RAGStore,
             idx = 0
             while start < len(words):
                 end = min(start + 200, len(words))
-                chunks.append({"id": f"{doc_id}_{idx}", "text": " ".join(words[start:end]),
-                              "source": "conversation_memory"})
+                chunks.append(
+                    {
+                        "id": f"{doc_id}_{idx}",
+                        "text": " ".join(words[start:end]),
+                        "source": "conversation_memory",
+                    }
+                )
                 idx += 1
                 start += 150
             added = rag_store.add_document(doc_id, chunks, embedding_model)
-            return json.dumps({"saved": True, "document_id": doc_id, "chunks": added,
-                              "message": "Knowledge saved. It will be available in future queries."}, ensure_ascii=False)
+            return json.dumps(
+                {
+                    "saved": True,
+                    "document_id": doc_id,
+                    "chunks": added,
+                    "message": "Knowledge saved. It will be available in future queries.",
+                },
+                ensure_ascii=False,
+            )
 
         else:
             return json.dumps({"error": f"Unknown tool: {tool_name}"}, ensure_ascii=False)

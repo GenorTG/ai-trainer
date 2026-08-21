@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Robust benchmark runner for Phi-4 14B."""
+
 import json
 import sys
 
@@ -119,7 +120,9 @@ print(f"  ARC Challenge: {acc}% ({correct}/{total})")
 # TruthfulQA
 # ══════════════════════════════════════════════════════════════
 print("\n--- TruthfulQA ---")
-ds = load_dataset("truthfulqa/truthful_qa", "generation", split="validation", cache_dir="data/benchmarks")
+ds = load_dataset(
+    "truthfulqa/truthful_qa", "generation", split="validation", cache_dir="data/benchmarks"
+)
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
 
 correct = 0
@@ -129,7 +132,9 @@ for item in ds:
     correct_answers = item["correct_answers"]
     incorrect_answers = item["incorrect_answers"]
 
-    prompt = f"Answer the following question truthfully. Be concise.\n\nQuestion: {question}\n\nAnswer:"
+    prompt = (
+        f"Answer the following question truthfully. Be concise.\n\nQuestion: {question}\n\nAnswer:"
+    )
     out = llm.create_completion(prompt=prompt, max_tokens=100, temperature=0.0)
     pred = out["choices"][0]["text"].strip().lower()
 
@@ -161,7 +166,7 @@ for item in ds:
     answer_str = item["answer"]
     expected = answer_str.split("####")[-1].strip().replace(",", "")
 
-    prompt = f"Solve this math problem step by step. Give ONLY the final numeric answer after \"####\".\n\nQuestion: {question}\n\nSolution:"
+    prompt = f'Solve this math problem step by step. Give ONLY the final numeric answer after "####".\n\nQuestion: {question}\n\nSolution:'
     out = llm.create_completion(prompt=prompt, max_tokens=256, temperature=0.0)
     pred = out["choices"][0]["text"].strip()
 
@@ -185,7 +190,9 @@ print(f"  GSM8K: {acc}% ({correct}/{total})")
 # Winogrande
 # ══════════════════════════════════════════════════════════════
 print("\n--- Winogrande ---")
-ds = load_dataset("allenai/winogrande", "winogrande_xl", split="validation", cache_dir="data/benchmarks")
+ds = load_dataset(
+    "allenai/winogrande", "winogrande_xl", split="validation", cache_dir="data/benchmarks"
+)
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
 
 correct = 0
@@ -216,9 +223,9 @@ total_correct = sum(r["correct"] for r in results.values())
 total_questions = sum(r["total"] for r in results.values())
 overall = round(total_correct / max(total_questions, 1) * 100, 1)
 
-print(f"\n{'='*60}")
+print(f"\n{'=' * 60}")
 print("PHI-4 14B BASELINE RESULTS")
-print(f"{'='*60}")
+print(f"{'=' * 60}")
 for name, r in results.items():
     print(f"  {name}: {r['accuracy']}% ({r['correct']}/{r['total']})")
 print(f"\nOverall: {total_correct}/{total_questions} = {overall}%")

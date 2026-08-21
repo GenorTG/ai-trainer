@@ -63,8 +63,13 @@ class DataQualityAnalyzer:
                     try:
                         data.append(json.loads(line))
                     except json.JSONDecodeError:
-                        self.issues.append({"type": "format", "severity": "high",
-                                           "message": f"Invalid JSON at line {len(data)+1}"})
+                        self.issues.append(
+                            {
+                                "type": "format",
+                                "severity": "high",
+                                "message": f"Invalid JSON at line {len(data) + 1}",
+                            }
+                        )
         return data
 
     def _check_format(self, data):
@@ -83,8 +88,13 @@ class DataQualityAnalyzer:
                     format_errors += 1
 
         if format_errors > 0:
-            self.issues.append({"type": "format", "severity": "high",
-                               "message": f"{format_errors} messages missing role/content"})
+            self.issues.append(
+                {
+                    "type": "format",
+                    "severity": "high",
+                    "message": f"{format_errors} messages missing role/content",
+                }
+            )
 
     def _check_duplicates(self, data):
         """Find duplicate examples."""
@@ -99,9 +109,14 @@ class DataQualityAnalyzer:
                 seen[h] = i
 
         if dupes > 0:
-            self.issues.append({"type": "duplicates", "severity": "medium",
-                               "message": f"{dupes} duplicate examples found",
-                               "fix": "Remove duplicates to prevent overfitting"})
+            self.issues.append(
+                {
+                    "type": "duplicates",
+                    "severity": "medium",
+                    "message": f"{dupes} duplicate examples found",
+                    "fix": "Remove duplicates to prevent overfitting",
+                }
+            )
 
     def _check_balance(self, data):
         """Check role distribution balance."""
@@ -114,14 +129,24 @@ class DataQualityAnalyzer:
 
         # Check for severely imbalanced roles
         if role_counts.get("system", 0) > role_counts.get("user", 0):
-            self.issues.append({"type": "balance", "severity": "medium",
-                               "message": "More system messages than user messages"})
+            self.issues.append(
+                {
+                    "type": "balance",
+                    "severity": "medium",
+                    "message": "More system messages than user messages",
+                }
+            )
 
         user_count = role_counts.get("user", 0)
         assistant_count = role_counts.get("assistant", 0)
         if assistant_count > 0 and user_count / assistant_count > 3:
-            self.issues.append({"type": "balance", "severity": "low",
-                               "message": f"User:Assistant ratio is {user_count/assistant_count:.1f}:1 (ideal: 1:1)"})
+            self.issues.append(
+                {
+                    "type": "balance",
+                    "severity": "low",
+                    "message": f"User:Assistant ratio is {user_count / assistant_count:.1f}:1 (ideal: 1:1)",
+                }
+            )
 
     def _check_length_distribution(self, data):
         """Check for too short or too long responses."""
@@ -143,11 +168,21 @@ class DataQualityAnalyzer:
         self.stats["max_response_words"] = max(lengths)
 
         if short > len(lengths) * 0.1:
-            self.issues.append({"type": "length", "severity": "medium",
-                               "message": f"{short} responses are very short (<3 words)"})
+            self.issues.append(
+                {
+                    "type": "length",
+                    "severity": "medium",
+                    "message": f"{short} responses are very short (<3 words)",
+                }
+            )
         if long > len(lengths) * 0.05:
-            self.issues.append({"type": "length", "severity": "low",
-                               "message": f"{long} responses are very long (>500 words)"})
+            self.issues.append(
+                {
+                    "type": "length",
+                    "severity": "low",
+                    "message": f"{long} responses are very long (>500 words)",
+                }
+            )
 
     def _check_language_balance(self, data):
         """Check PL/EN balance."""
@@ -174,11 +209,21 @@ class DataQualityAnalyzer:
             pl_ratio = pl_count / total
             en_ratio = en_count / total
             if pl_ratio > 0.8:
-                self.issues.append({"type": "language", "severity": "medium",
-                                   "message": f"Dataset is {pl_ratio:.0%} Polish — add more English examples"})
+                self.issues.append(
+                    {
+                        "type": "language",
+                        "severity": "medium",
+                        "message": f"Dataset is {pl_ratio:.0%} Polish — add more English examples",
+                    }
+                )
             elif en_ratio > 0.8:
-                self.issues.append({"type": "language", "severity": "medium",
-                                   "message": f"Dataset is {en_ratio:.0%} English — add more Polish examples"})
+                self.issues.append(
+                    {
+                        "type": "language",
+                        "severity": "medium",
+                        "message": f"Dataset is {en_ratio:.0%} English — add more Polish examples",
+                    }
+                )
 
     def _check_system_prompts(self, data):
         """Check system prompt consistency."""
@@ -190,8 +235,13 @@ class DataQualityAnalyzer:
 
         unique_prompts = len(set(prompts))
         if unique_prompts > 3:
-            self.issues.append({"type": "system_prompt", "severity": "low",
-                               "message": f"{unique_prompts} different system prompts found"})
+            self.issues.append(
+                {
+                    "type": "system_prompt",
+                    "severity": "low",
+                    "message": f"{unique_prompts} different system prompts found",
+                }
+            )
 
     def _check_empty_responses(self, data):
         """Check for empty assistant responses."""
@@ -202,9 +252,14 @@ class DataQualityAnalyzer:
                     empty += 1
 
         if empty > 0:
-            self.issues.append({"type": "empty", "severity": "high",
-                               "message": f"{empty} empty assistant responses found",
-                               "fix": "Remove or fix empty responses — they cause empty output bugs"})
+            self.issues.append(
+                {
+                    "type": "empty",
+                    "severity": "high",
+                    "message": f"{empty} empty assistant responses found",
+                    "fix": "Remove or fix empty responses — they cause empty output bugs",
+                }
+            )
 
     def _check_hallucination_risks(self, data):
         """Check for potential hallucination triggers."""
@@ -215,12 +270,21 @@ class DataQualityAnalyzer:
         ]
 
         for pattern, reason in risky_patterns:
-            count = sum(1 for item in data
-                       for msg in item.get("messages", [])
-                       if msg.get("role") == "assistant" and pattern.lower() in msg.get("content", "").lower())
+            count = sum(
+                1
+                for item in data
+                for msg in item.get("messages", [])
+                if msg.get("role") == "assistant"
+                and pattern.lower() in msg.get("content", "").lower()
+            )
             if count > len(data) * 0.1:
-                self.issues.append({"type": "hallucination_risk", "severity": "low",
-                                   "message": f"'{pattern}' appears in {count} responses — {reason}"})
+                self.issues.append(
+                    {
+                        "type": "hallucination_risk",
+                        "severity": "low",
+                        "message": f"'{pattern}' appears in {count} responses — {reason}",
+                    }
+                )
 
     def _calculate_severity(self):
         severities = [i["severity"] for i in self.issues]
@@ -236,15 +300,31 @@ def generate_fixes(analysis: dict) -> list:
     fixes = []
     for issue in analysis["issues"]:
         if issue["type"] == "duplicates":
-            fixes.append({"action": "deduplicate", "priority": "high",
-                         "command": "fts dedup INPUT OUTPUT"})
+            fixes.append(
+                {"action": "deduplicate", "priority": "high", "command": "fts dedup INPUT OUTPUT"}
+            )
         elif issue["type"] == "empty":
-            fixes.append({"action": "remove_empty", "priority": "high",
-                         "command": "fts clean INPUT --remove-empty"})
+            fixes.append(
+                {
+                    "action": "remove_empty",
+                    "priority": "high",
+                    "command": "fts clean INPUT --remove-empty",
+                }
+            )
         elif issue["type"] == "language":
-            fixes.append({"action": "augment_language", "priority": "medium",
-                         "command": "fts augment INPUT --target-lang EN --count 100"})
+            fixes.append(
+                {
+                    "action": "augment_language",
+                    "priority": "medium",
+                    "command": "fts augment INPUT --target-lang EN --count 100",
+                }
+            )
         elif issue["type"] == "length":
-            fixes.append({"action": "balance_length", "priority": "medium",
-                         "command": "fts augment INPUT --min-words 5 --max-words 200"})
+            fixes.append(
+                {
+                    "action": "balance_length",
+                    "priority": "medium",
+                    "command": "fts augment INPUT --min-words 5 --max-words 200",
+                }
+            )
     return fixes

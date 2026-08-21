@@ -26,6 +26,7 @@ class ServerConfig:
     port: int = 8080
     reload: bool = False
 
+
 @dataclass
 class ModelConfig:
     path: str = ""
@@ -33,6 +34,7 @@ class ModelConfig:
     n_ctx: int = 8192
     n_threads: int = 4
     verbose: bool = False
+
 
 @dataclass
 class RAGConfig:
@@ -46,6 +48,7 @@ class RAGConfig:
     min_score: float = 0.3
     max_context_length: int = 2000
 
+
 @dataclass
 class InferenceConfig:
     max_tokens: int = 1024
@@ -55,11 +58,13 @@ class InferenceConfig:
     repeat_penalty: float = 1.05
     min_p: float = 0.05
 
+
 @dataclass
 class APIConfig:
     key: str = ""
     cors: bool = True
     rate_limit: int = 100  # requests per minute
+
 
 @dataclass
 class AppConfig:
@@ -77,6 +82,7 @@ def load_config(config_path: str = "config.yaml") -> AppConfig:
     if os.path.exists(config_path):
         try:
             import yaml
+
             with open(config_path) as f:
                 data = yaml.safe_load(f) or {}
 

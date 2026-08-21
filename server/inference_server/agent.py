@@ -29,8 +29,14 @@ class ToolCallingAgent:
     2. Manual tool parsing (any model — we parse the response for tool-call JSON)
     """
 
-    def __init__(self, engine, rag_store, embedding_model: str = "all-MiniLM-L6-v2",
-                 max_iterations: int = 5, native_tools: bool = True):
+    def __init__(
+        self,
+        engine,
+        rag_store,
+        embedding_model: str = "all-MiniLM-L6-v2",
+        max_iterations: int = 5,
+        native_tools: bool = True,
+    ):
         self.engine = engine
         self.rag_store = rag_store
         self.embedding_model = embedding_model
@@ -114,7 +120,7 @@ class ToolCallingAgent:
                 elif c == "}":
                     depth -= 1
                     if depth == 0:
-                        candidates.append(text[i:j + 1])
+                        candidates.append(text[i : j + 1])
                         break
         return candidates
 
@@ -150,8 +156,13 @@ class ToolCallingAgent:
             return {"tool": data["name"], "arguments": args}
         return data
 
-    def run(self, messages: list, max_tokens: int = 512, temperature: float = 0.7,
-            max_iterations: int | None = None) -> dict:
+    def run(
+        self,
+        messages: list,
+        max_tokens: int = 512,
+        temperature: float = 0.7,
+        max_iterations: int | None = None,
+    ) -> dict:
         """Run the agent loop. Returns final response + tool call log."""
         iterations = max_iterations or self.max_iterations
         work_messages = [dict(m) for m in messages]
@@ -194,26 +205,32 @@ class ToolCallingAgent:
                     arguments = {}
 
             tool_result = execute_tool(tool_name, arguments, self.rag_store, self.embedding_model)
-            tool_log.append({
-                "tool": tool_name,
-                "arguments": arguments,
-                "result": tool_result[:2000],
-                "iteration": tool_calls_made + 1,
-            })
+            tool_log.append(
+                {
+                    "tool": tool_name,
+                    "arguments": arguments,
+                    "result": tool_result[:2000],
+                    "iteration": tool_calls_made + 1,
+                }
+            )
             tool_calls_made += 1
 
             # Add tool result to messages
             if self.native_tools:
-                work_messages.append({
-                    "role": "tool",
-                    "tool_call_id": result.get("tool_call_id", f"call_{tool_calls_made}"),
-                    "content": tool_result,
-                })
+                work_messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": result.get("tool_call_id", f"call_{tool_calls_made}"),
+                        "content": tool_result,
+                    }
+                )
             else:
-                work_messages.append({
-                    "role": "user",
-                    "content": f"[Tool {tool_name} result]: {tool_result}\n\nNow continue with your answer, or call another tool if needed.",
-                })
+                work_messages.append(
+                    {
+                        "role": "user",
+                        "content": f"[Tool {tool_name} result]: {tool_result}\n\nNow continue with your answer, or call another tool if needed.",
+                    }
+                )
 
         return {
             "response": final_response or content,
@@ -262,7 +279,5 @@ class ToolCallingAgent:
         else:
             work.insert(0, {"role": "system", "content": tool_prompt})
 
-        response = self.engine.generate(
-            work, max_tokens=max_tokens, temperature=temperature
-        )
+        response = self.engine.generate(work, max_tokens=max_tokens, temperature=temperature)
         return {"response": response}

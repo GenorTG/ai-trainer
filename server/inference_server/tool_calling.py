@@ -59,7 +59,8 @@ class ToolCallEvaluator:
                     name = item.get("name", "")
                     args = item.get("args", item.get("arguments", {}))
                     if isinstance(args, str):
-                        try: args = json.loads(args)
+                        try:
+                            args = json.loads(args)
                         except Exception:  # noqa: BLE001
                             args = {}
                     return ToolCall(name=name, arguments=args or {}, raw=text)
@@ -73,7 +74,8 @@ class ToolCallEvaluator:
                 name = data.get("name", data.get("tool", ""))
                 args = data.get("arguments", data.get("args", {}))
                 if isinstance(args, str):
-                    try: args = json.loads(args)
+                    try:
+                        args = json.loads(args)
                     except Exception:  # noqa: BLE001
                         args = {}
                 if name:
@@ -82,7 +84,7 @@ class ToolCallEvaluator:
             pass
 
         # Format 3: <tool_call> wrapper
-        match = re.search(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL)
+        match = re.search(r"<tool_call>(.*?)</tool_call>", text, re.DOTALL)
         if match:
             try:
                 data = json.loads(match.group(1).strip())
@@ -116,7 +118,11 @@ class ToolCallEvaluator:
         forbidden = tool_call.name in test.forbidden_tools
 
         if not test.expected_tools:
-            return {"correct": False, "tool_called": tool_call.name, "reason": "Tool called but none expected"}
+            return {
+                "correct": False,
+                "tool_called": tool_call.name,
+                "reason": "Tool called but none expected",
+            }
 
         return {
             "correct": correct_tool and not forbidden,
@@ -126,15 +132,77 @@ class ToolCallEvaluator:
 
 
 TOOL_CALL_TESTS = [
-    AgenticTest("web_search_python", "Should call web_search", "You are a helpful assistant.", "Search for Python programming", ["web_search"], {"query": ["python"]}),
-    AgenticTest("calculator_math", "Should call calculator", "You are a helpful assistant.", "What is 15 * 37 + 42?", ["calculator"], {"expression": ["15", "37"]}),
-    AgenticTest("file_read", "Should call file_read", "You are a helpful assistant.", "Read /home/user/document.txt", ["file_read"], {"path": ["document.txt", "/home/user"]}),
-    AgenticTest("note_save", "Should call note_save", "You are a helpful assistant.", "Save: Meeting at 3pm", ["note_save"], {"content": ["meeting", "3pm"]}),
-    AgenticTest("rag_search", "Should call rag_search", "You have access to a knowledge base.", "What projects completed?", ["rag_search"], {"query": ["project"]}),
-    AgenticTest("weather", "Should call weather_check", "You are a helpful assistant.", "Weather in Warsaw?", ["weather_check"], {"city": ["Warsaw"]}),
-    AgenticTest("no_tool_simple", "Should NOT use tool for 2+2", "You are a helpful assistant.", "What is 2 + 2?", [], {}),
-    AgenticTest("no_tool_greeting", "Should NOT use tool for greeting", "You are a helpful assistant.", "Hello! How are you?", [], {}),
-    AgenticTest("multi_step", "Should search then save", "You are a helpful assistant.", "Search climate change and save a note", ["web_search", "note_save"]),
+    AgenticTest(
+        "web_search_python",
+        "Should call web_search",
+        "You are a helpful assistant.",
+        "Search for Python programming",
+        ["web_search"],
+        {"query": ["python"]},
+    ),
+    AgenticTest(
+        "calculator_math",
+        "Should call calculator",
+        "You are a helpful assistant.",
+        "What is 15 * 37 + 42?",
+        ["calculator"],
+        {"expression": ["15", "37"]},
+    ),
+    AgenticTest(
+        "file_read",
+        "Should call file_read",
+        "You are a helpful assistant.",
+        "Read /home/user/document.txt",
+        ["file_read"],
+        {"path": ["document.txt", "/home/user"]},
+    ),
+    AgenticTest(
+        "note_save",
+        "Should call note_save",
+        "You are a helpful assistant.",
+        "Save: Meeting at 3pm",
+        ["note_save"],
+        {"content": ["meeting", "3pm"]},
+    ),
+    AgenticTest(
+        "rag_search",
+        "Should call rag_search",
+        "You have access to a knowledge base.",
+        "What projects completed?",
+        ["rag_search"],
+        {"query": ["project"]},
+    ),
+    AgenticTest(
+        "weather",
+        "Should call weather_check",
+        "You are a helpful assistant.",
+        "Weather in Warsaw?",
+        ["weather_check"],
+        {"city": ["Warsaw"]},
+    ),
+    AgenticTest(
+        "no_tool_simple",
+        "Should NOT use tool for 2+2",
+        "You are a helpful assistant.",
+        "What is 2 + 2?",
+        [],
+        {},
+    ),
+    AgenticTest(
+        "no_tool_greeting",
+        "Should NOT use tool for greeting",
+        "You are a helpful assistant.",
+        "Hello! How are you?",
+        [],
+        {},
+    ),
+    AgenticTest(
+        "multi_step",
+        "Should search then save",
+        "You are a helpful assistant.",
+        "Search climate change and save a note",
+        ["web_search", "note_save"],
+    ),
 ]
 
-TOOL_PROMPT_SUFFIX = "\n\nYou have access to these tools. When you need to use one, respond with ONLY a JSON object:\n{\"name\": \"tool_name\", \"arguments\": {\"arg\": \"value\"}}\n\nAvailable tools:\n- web_search: Search the web\n- calculator: Calculate math\n- file_read: Read a file\n- note_save: Save a note\n- rag_search: Search knowledge base\n- weather_check: Check weather\n\nIf no tool is needed, respond normally.\n"
+TOOL_PROMPT_SUFFIX = '\n\nYou have access to these tools. When you need to use one, respond with ONLY a JSON object:\n{"name": "tool_name", "arguments": {"arg": "value"}}\n\nAvailable tools:\n- web_search: Search the web\n- calculator: Calculate math\n- file_read: Read a file\n- note_save: Save a note\n- rag_search: Search knowledge base\n- weather_check: Check weather\n\nIf no tool is needed, respond normally.\n'

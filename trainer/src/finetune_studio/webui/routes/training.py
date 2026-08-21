@@ -10,16 +10,28 @@ from finetune_studio.webui.app import training_engine
 
 router = APIRouter()
 
+
 @router.get("/status")
 async def status():
     s = training_engine.state
-    return {"status": s.status, "step": s.current_step, "total_steps": s.total_steps,
-            "loss": s.loss, "learning_rate": s.learning_rate, "epoch": s.epoch,
-            "elapsed": s.elapsed, "eta": s.eta, "message": s.message, "error": s.error}
+    return {
+        "status": s.status,
+        "step": s.current_step,
+        "total_steps": s.total_steps,
+        "loss": s.loss,
+        "learning_rate": s.learning_rate,
+        "epoch": s.epoch,
+        "elapsed": s.elapsed,
+        "eta": s.eta,
+        "message": s.message,
+        "error": s.error,
+    }
+
 
 @router.get("/progress")
 async def progress():
     return StreamingResponse(training_events(training_engine), media_type="text/event-stream")
+
 
 @router.post("/start")
 async def start_training(request: Request):
@@ -42,6 +54,7 @@ async def start_training(request: Request):
     system_prompt = body.get("system_prompt", "")
     training_engine.start(config, training_data, system_prompt)
     return {"status": "started", "steps": training_engine.state.total_steps}
+
 
 @router.post("/stop")
 async def stop_training():

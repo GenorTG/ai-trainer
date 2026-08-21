@@ -40,8 +40,13 @@ class RAGManager:
             "total_chunks_in_store": self.store.count(),
         }
 
-    def ingest_directory(self, directory: str, chunk_size: int = 512,
-                         overlap: int = 50, extensions: list | None = None) -> dict:
+    def ingest_directory(
+        self,
+        directory: str,
+        chunk_size: int = 512,
+        overlap: int = 50,
+        extensions: list | None = None,
+    ) -> dict:
         """Ingest all supported files in a directory."""
         documents = ingest_directory(directory, chunk_size, overlap, extensions)
         total_chunks = 0

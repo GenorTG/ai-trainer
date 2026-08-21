@@ -36,6 +36,7 @@ class Document:
     metadata: dict = field(default_factory=dict)
     chunk_count: int = 0
 
+
 @dataclass
 class Chunk:
     id: str = ""
@@ -70,9 +71,12 @@ def extract_pdf(path: Path) -> str:
     """Extract text from PDF."""
     try:
         import subprocess
+
         result = subprocess.run(
             ["pdftotext", str(path), "-"],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True,
+            text=True,
+            timeout=30,
             check=False,
         )
         if result.returncode == 0:
@@ -83,6 +87,7 @@ def extract_pdf(path: Path) -> str:
     # Fallback: PyPDF2
     try:
         from PyPDF2 import PdfReader
+
         reader = PdfReader(str(path))
         text = ""
         for page in reader.pages:
@@ -96,13 +101,16 @@ def extract_docx(path: Path) -> str:
     """Extract text from DOCX."""
     try:
         from docx import Document as DocxDocument
+
         doc = DocxDocument(str(path))
         return "\n".join(p.text for p in doc.paragraphs)
     except ImportError:
         return f"[DOCX: {path.name} — install python-docx to read]"
 
 
-def chunk_text(text: str, chunk_size: int = 512, overlap: int = 50, metadata: dict | None = None) -> list[Chunk]:
+def chunk_text(
+    text: str, chunk_size: int = 512, overlap: int = 50, metadata: dict | None = None
+) -> list[Chunk]:
     """Split text into overlapping chunks."""
     if not text.strip():
         return []
@@ -117,11 +125,13 @@ def chunk_text(text: str, chunk_size: int = 512, overlap: int = 50, metadata: di
         chunk_words = words[start:end]
         chunk_text_str = " ".join(chunk_words)
 
-        chunks.append(Chunk(
-            text=chunk_text_str,
-            chunk_index=idx,
-            metadata=metadata or {},
-        ))
+        chunks.append(
+            Chunk(
+                text=chunk_text_str,
+                chunk_index=idx,
+                metadata=metadata or {},
+            )
+        )
         idx += 1
         start += chunk_size - overlap
 
@@ -152,12 +162,25 @@ def ingest_file(file_path: str, chunk_size: int = 512, overlap: int = 50) -> Doc
     )
 
 
-def ingest_directory(directory: str, chunk_size: int = 512, overlap: int = 50,
-                     extensions: list | None = None) -> list[Document]:
+def ingest_directory(
+    directory: str, chunk_size: int = 512, overlap: int = 50, extensions: list | None = None
+) -> list[Document]:
     """Ingest all supported files in a directory."""
     if extensions is None:
-        extensions = [".txt", ".md", ".pdf", ".docx", ".csv", ".json", ".jsonl",
-                      ".py", ".js", ".ts", ".html", ".css"]
+        extensions = [
+            ".txt",
+            ".md",
+            ".pdf",
+            ".docx",
+            ".csv",
+            ".json",
+            ".jsonl",
+            ".py",
+            ".js",
+            ".ts",
+            ".html",
+            ".css",
+        ]
 
     documents = []
     for root, dirs, files in os.walk(directory):

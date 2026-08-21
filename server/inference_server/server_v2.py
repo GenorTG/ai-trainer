@@ -64,11 +64,14 @@ async def lifespan(app: FastAPI):
         # Auto-ingest documents
         if os.path.exists(config.rag.documents_path):
             print(f"Ingesting documents from: {config.rag.documents_path}")
-            result = ingestor.ingest_directory(config.rag.documents_path, embedding_model=config.rag.embedding_model)
+            result = ingestor.ingest_directory(
+                config.rag.documents_path, embedding_model=config.rag.embedding_model
+            )
             print(f"Ingested {result['files_ingested']} files, {result['chunks_added']} chunks")
 
         # Setup MCP server
         from .mcp import RAGMCPServer
+
         mcp_server = RAGMCPServer(rag_store, config.rag.embedding_model)
 
     print(f"Server ready on http://{config.server.host}:{config.server.port}")
@@ -87,6 +90,7 @@ class ChatMessage(BaseModel):
     role: str
     content: str
 
+
 class ChatRequest(BaseModel):
     model: str = "default"
     messages: list[ChatMessage]
@@ -100,6 +104,7 @@ class ChatRequest(BaseModel):
     sampler_preset: str | None = None
     agentic: bool = False
     tools: list = None
+
 
 class RAGQueryRequest(BaseModel):
     question: str
@@ -129,8 +134,12 @@ async def chat_completions(request: ChatRequest, _=Depends(verify_api_key)):  # 
 
     # Apply sampler preset
     sampler = SamplerConfig(
-        temperature=request.temperature, top_p=request.top_p, top_k=request.top_k,
-        repeat_penalty=request.repeat_penalty, min_p=request.min_p, max_tokens=request.max_tokens,
+        temperature=request.temperature,
+        top_p=request.top_p,
+        top_k=request.top_k,
+        repeat_penalty=request.repeat_penalty,
+        min_p=request.min_p,
+        max_tokens=request.max_tokens,
     )
     if request.sampler_preset and request.sampler_preset in PRESETS:
         preset = PRESETS[request.sampler_preset]
@@ -143,29 +152,62 @@ async def chat_completions(request: ChatRequest, _=Depends(verify_api_key)):  # 
     # Agentic mode with tool calling
     if request.agentic and mcp_server:
         from ..agent import ToolCallingAgent
-        agent = ToolCallingAgent(engine, rag_store, config.rag.embedding_model if rag_store else "all-MiniLM-L6-v2")
+
+        agent = ToolCallingAgent(
+            engine, rag_store, config.rag.embedding_model if rag_store else "all-MiniLM-L6-v2"
+        )
         result = agent.run(messages, max_tokens=sampler.max_tokens, temperature=sampler.temperature)
         return {
             "id": f"chatcmpl-{int(time.time())}",
             "object": "chat.completion",
             "created": int(time.time()),
             "model": request.model,
-            "choices": [{"index": 0, "message": {"role": "assistant", "content": result["response"]}, "finish_reason": "stop"}],
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": result["response"]},
+                    "finish_reason": "stop",
+                }
+            ],
             "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
             "x_tool_calls": result.get("tool_calls", []),
-            "x_sampler": {"temperature": sampler.temperature, "top_p": sampler.top_p, "top_k": sampler.top_k},
+            "x_sampler": {
+                "temperature": sampler.temperature,
+                "top_p": sampler.top_p,
+                "top_k": sampler.top_k,
+            },
         }
 
     # Standard generation
-    result = engine.generate(messages, max_tokens=sampler.max_tokens, temperature=sampler.temperature, top_p=sampler.top_p)
+    result = engine.generate(
+        messages,
+        max_tokens=sampler.max_tokens,
+        temperature=sampler.temperature,
+        top_p=sampler.top_p,
+    )
     return {
         "id": f"chatcmpl-{int(time.time())}",
         "object": "chat.completion",
         "created": int(time.time()),
         "model": request.model,
-        "choices": [{"index": 0, "message": {"role": "assistant", "content": result if isinstance(result, str) else result.get("response", str(result))}, "finish_reason": "stop"}],
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": result
+                    if isinstance(result, str)
+                    else result.get("response", str(result)),
+                },
+                "finish_reason": "stop",
+            }
+        ],
         "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
-        "x_sampler": {"temperature": sampler.temperature, "top_p": sampler.top_p, "top_k": sampler.top_k},
+        "x_sampler": {
+            "temperature": sampler.temperature,
+            "top_p": sampler.top_p,
+            "top_k": sampler.top_k,
+        },
     }
 
 
@@ -173,7 +215,9 @@ async def chat_completions(request: ChatRequest, _=Depends(verify_api_key)):  # 
 async def list_models(_=Depends(verify_api_key)):  # noqa: B008
     models = []
     if engine and engine.model_path:
-        models.append({"id": "default", "object": "model", "created": int(start_time), "owned_by": "local"})
+        models.append(
+            {"id": "default", "object": "model", "created": int(start_time), "owned_by": "local"}
+        )
     return {"object": "list", "data": models}
 
 
@@ -181,12 +225,16 @@ async def list_models(_=Depends(verify_api_key)):  # noqa: B008
 async def list_samplers():
     """List available sampler presets."""
     from .samplers import list_presets
+
     return {
         "presets": list_presets(),
         "defaults": {
-            "temperature": 0.7, "top_p": 0.9, "top_k": 40,
-            "repeat_penalty": 1.1, "min_p": 0.05,
-        }
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "min_p": 0.05,
+        },
     }
 
 
@@ -198,21 +246,36 @@ async def rag_query(request: RAGQueryRequest, _=Depends(verify_api_key)):  # noq
     if rag_store is None:
         raise HTTPException(status_code=503, detail="RAG not enabled")
 
-    results = rag_store.search(request.question, top_k=request.top_k, embedding_model=config.rag.embedding_model)
-    context_parts = [f"[Source: {r.source}]\n{r.text}" for r in results if r.score >= config.rag.min_score]
+    results = rag_store.search(
+        request.question, top_k=request.top_k, embedding_model=config.rag.embedding_model
+    )
+    context_parts = [
+        f"[Source: {r.source}]\n{r.text}" for r in results if r.score >= config.rag.min_score
+    ]
     context = "\n\n---\n\n".join(context_parts)
 
     messages = []
     if request.system_prompt:
         messages.append({"role": "system", "content": request.system_prompt})
     if context:
-        messages.append({"role": "system", "content": f"Based on the following documents:\n\n{context}\n\nAnswer the question using this information when relevant."})
+        messages.append(
+            {
+                "role": "system",
+                "content": f"Based on the following documents:\n\n{context}\n\nAnswer the question using this information when relevant.",
+            }
+        )
     messages.append({"role": "user", "content": request.question})
 
-    result = engine.generate(messages, max_tokens=request.max_tokens, temperature=request.temperature)
+    result = engine.generate(
+        messages, max_tokens=request.max_tokens, temperature=request.temperature
+    )
     return {
         "response": result if isinstance(result, str) else result.get("response", str(result)),
-        "sources": [{"text": r.text[:200], "score": round(r.score, 3), "source": r.source} for r in results if r.score >= config.rag.min_score],
+        "sources": [
+            {"text": r.text[:200], "score": round(r.score, 3), "source": r.source}
+            for r in results
+            if r.score >= config.rag.min_score
+        ],
         "chunks_retrieved": len([r for r in results if r.score >= config.rag.min_score]),
     }
 
@@ -223,6 +286,7 @@ async def rag_ingest(file: UploadFile = File(...), _=Depends(verify_api_key)):  
         raise HTTPException(status_code=503, detail="RAG not enabled")
     content = await file.read()
     from .parsers import ingest_bytes
+
     result = ingest_bytes(file.filename, content, rag_store, config.rag.embedding_model)
     # Save file
     upload_dir = Path(config.rag.documents_path)
@@ -295,8 +359,15 @@ async def health():
 async def stats(_=Depends(verify_api_key)):  # noqa: B008
     return {
         "model": engine.status() if engine else {},
-        "rag": {"enabled": rag_store is not None, "total_chunks": rag_store.count() if rag_store else 0, "documents": len(rag_store.list_documents()) if rag_store else 0},
-        "mcp": {"enabled": mcp_server is not None, "tools": len(mcp_server.tools) if mcp_server else 0},
+        "rag": {
+            "enabled": rag_store is not None,
+            "total_chunks": rag_store.count() if rag_store else 0,
+            "documents": len(rag_store.list_documents()) if rag_store else 0,
+        },
+        "mcp": {
+            "enabled": mcp_server is not None,
+            "tools": len(mcp_server.tools) if mcp_server else 0,
+        },
         "samplers": list(PRESETS.keys()),
         "uptime_seconds": round(time.time() - start_time, 1),
     }
@@ -314,5 +385,6 @@ async def reload_model(_=Depends(verify_api_key)):  # noqa: B008
         rag_store = RAGStore(config.rag.store_path)
         ingestor = DocumentIngestor(rag_store, config.rag.chunk_size, config.rag.chunk_overlap)
         from .mcp import RAGMCPServer
+
         mcp_server = RAGMCPServer(rag_store, config.rag.embedding_model)
     return {"status": "reloaded", "model": engine.status() if engine else {}}

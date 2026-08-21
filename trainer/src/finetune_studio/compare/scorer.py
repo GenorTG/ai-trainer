@@ -40,8 +40,13 @@ class ScoreResult:
 class Scorer:
     """Score comparison results."""
 
-    def __init__(self, keyword_weight: float = 0.5, length_weight: float = 0.2,
-                 time_weight: float = 0.1, forbidden_weight: float = 0.2):
+    def __init__(
+        self,
+        keyword_weight: float = 0.5,
+        length_weight: float = 0.2,
+        time_weight: float = 0.1,
+        forbidden_weight: float = 0.2,
+    ):
         self.keyword_weight = keyword_weight
         self.length_weight = length_weight
         self.time_weight = time_weight
@@ -97,21 +102,26 @@ class Scorer:
         else:
             return 0.5
 
-    def score_response(self, test_name: str, source_name: str, response: str,
-                       expected: list, forbidden: list, time_ms: float,
-                       ideal_length: int = 200) -> ScoreResult:
+    def score_response(
+        self,
+        test_name: str,
+        source_name: str,
+        response: str,
+        expected: list,
+        forbidden: list,
+        time_ms: float,
+        ideal_length: int = 200,
+    ) -> ScoreResult:
         """Score a single response."""
-        keyword_score, forbidden_penalty = self.score_keyword_match(
-            response, expected, forbidden
-        )
+        keyword_score, forbidden_penalty = self.score_keyword_match(response, expected, forbidden)
         length_score = self.score_length(response, ideal_length)
         time_score = self.score_time(time_ms)
 
         total = (
-            keyword_score * self.keyword_weight +
-            length_score * self.length_weight +
-            time_score * self.time_weight -
-            forbidden_penalty * self.forbidden_weight
+            keyword_score * self.keyword_weight
+            + length_score * self.length_weight
+            + time_score * self.time_weight
+            - forbidden_penalty * self.forbidden_weight
         )
         total = max(0.0, min(1.0, total))
 
@@ -140,14 +150,16 @@ class Scorer:
             for source_name, responses in test["responses"].items():
                 for i, result in enumerate(responses):
                     if result["error"]:
-                        all_scores.append(ScoreResult(
-                            test_name=test["name"],
-                            source_name=source_name,
-                            response="",
-                            total_score=0.0,
-                            passed=False,
-                            details={"error": result["error"]},
-                        ))
+                        all_scores.append(
+                            ScoreResult(
+                                test_name=test["name"],
+                                source_name=source_name,
+                                response="",
+                                total_score=0.0,
+                                passed=False,
+                                details={"error": result["error"]},
+                            )
+                        )
                     else:
                         score = self.score_response(
                             test["name"],
@@ -177,15 +189,9 @@ class Scorer:
 
         for source_name, data in by_source.items():
             scores = data["scores"]
-            data["avg_score"] = round(
-                sum(s.total_score for s in scores) / max(len(scores), 1), 3
-            )
-            data["avg_time_ms"] = round(
-                sum(s.time_ms for s in scores) / max(len(scores), 1), 1
-            )
-            data["pass_rate"] = round(
-                data["passed"] / max(data["total"], 1) * 100, 1
-            )
+            data["avg_score"] = round(sum(s.total_score for s in scores) / max(len(scores), 1), 3)
+            data["avg_time_ms"] = round(sum(s.time_ms for s in scores) / max(len(scores), 1), 1)
+            data["pass_rate"] = round(data["passed"] / max(data["total"], 1) * 100, 1)
 
         return {
             "all_scores": all_scores,

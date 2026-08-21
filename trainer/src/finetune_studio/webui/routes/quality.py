@@ -47,6 +47,7 @@ def data_analyze(req: DataJobRequest) -> DataJobResponse:
         raise HTTPException(status_code=404, detail=f"File not found: {req.path}")
     try:
         from finetune_studio.training.data_quality import DataQualityAnalyzer
+
         analyzer = DataQualityAnalyzer()
         report = analyzer.analyze(req.path)
         return DataJobResponse(status="ok", command="analyze", path=req.path, result=report)
@@ -64,6 +65,7 @@ def data_augment(req: DataJobRequest) -> DataJobResponse:
         from finetune_studio.training.data_augmentation import (
             _DataAugmenterWrapper as DataAugmenter,
         )
+
         augmenter = DataAugmenter(req.path, output_path=req.output)
         result = augmenter.run()
         return DataJobResponse(status="ok", command="augment", path=req.path, result=result)
@@ -79,6 +81,7 @@ def data_optimize(req: DataJobRequest) -> DataJobResponse:
         raise HTTPException(status_code=404, detail=f"File not found: {req.path}")
     try:
         from finetune_studio.training.config_optimizer import ConfigOptimizer
+
         optimizer = ConfigOptimizer(req.path)
         config = optimizer.recommend()
         return DataJobResponse(status="ok", command="optimize", path=req.path, result=config)
@@ -94,11 +97,16 @@ def data_hallucination_check(req: DataJobRequest) -> DataJobResponse:
         raise HTTPException(status_code=404, detail=f"File not found: {req.path}")
     try:
         from finetune_studio.training.hallucination_guard import HallucinationGuard
+
         guard = HallucinationGuard(req.path)
         report = guard.scan()
-        return DataJobResponse(status="ok", command="validate-hallucination", path=req.path, result=report)
+        return DataJobResponse(
+            status="ok", command="validate-hallucination", path=req.path, result=report
+        )
     except Exception as exc:  # noqa: BLE001
-        return DataJobResponse(status="error", command="validate-hallucination", path=req.path, error=str(exc))
+        return DataJobResponse(
+            status="error", command="validate-hallucination", path=req.path, error=str(exc)
+        )
 
 
 # ── CLI: fts convert ─────────────────────────────────────────────────────
@@ -115,7 +123,10 @@ def data_convert(req: ConvertRequest) -> DataJobResponse:
         raise HTTPException(status_code=404, detail=f"File not found: {req.path}")
     try:
         from finetune_studio.compare.engine import FormatConverter
-        converter = FormatConverter(source=req.path, target_format=req.target_format, output=req.output)
+
+        converter = FormatConverter(
+            source=req.path, target_format=req.target_format, output=req.output
+        )
         result = converter.convert()
         return DataJobResponse(status="ok", command="convert", path=req.path, result=result)
     except Exception as exc:  # noqa: BLE001

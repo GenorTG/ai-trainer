@@ -8,6 +8,7 @@ Changes from v20:
 3. Lower learning rate: 5e-5 (was 8e-5) to preserve more base knowledge
 4. Same LoRA config: r=64, target modules same
 """
+
 import os
 import sys
 import time
@@ -46,7 +47,15 @@ try:
     model = FastLanguageModel.get_peft_model(
         model,
         r=64,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        target_modules=[
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj",
+        ],
         lora_alpha=64,
         lora_dropout=0,
         bias="none",
@@ -118,7 +127,9 @@ try:
         quantization_method="q4_k_m",
     )
     print(f"[{time.strftime('%H:%M:%S')}] GGUF exported")
-    print(f"[{time.strftime('%H:%M:%S')}] GGUF: {OUTPUT_DIR}/export_gguf/gemma-4-e4b-it.Q4_K_M.gguf")
+    print(
+        f"[{time.strftime('%H:%M:%S')}] GGUF: {OUTPUT_DIR}/export_gguf/gemma-4-e4b-it.Q4_K_M.gguf"
+    )
 
 except KeyboardInterrupt:
     print(f"\n[{time.strftime('%H:%M:%S')}] Interrupted")

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Phi-4 14B baseline benchmark — v2 with better prompts."""
+
 import ast
 import json
 import re
@@ -27,7 +28,8 @@ from datasets import load_dataset
 
 ds = load_dataset("cais/mmlu", "all", split="test", cache_dir="data/benchmarks")
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
-correct = 0; total = 0
+correct = 0
+total = 0
 for item in ds:
     question = item["question"]
     choices = item["choices"]
@@ -42,9 +44,14 @@ for item in ds:
         if c in "ABCD":
             pred_letter = c
             break
-    if pred_letter == expected: correct += 1
+    if pred_letter == expected:
+        correct += 1
     total += 1
-results["mmlu"] = {"total": total, "correct": correct, "accuracy": round(correct/max(total,1)*100,1)}
+results["mmlu"] = {
+    "total": total,
+    "correct": correct,
+    "accuracy": round(correct / max(total, 1) * 100, 1),
+}
 print(f"  MMLU: {results['mmlu']['accuracy']}% ({correct}/{total})")
 
 # ══════════════════════════════════════════════════════════════
@@ -53,7 +60,8 @@ print(f"  MMLU: {results['mmlu']['accuracy']}% ({correct}/{total})")
 print("\n--- HellaSwag ---")
 ds = load_dataset("Rowan/hellaswag", split="validation", cache_dir="data/benchmarks")
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
-correct = 0; total = 0
+correct = 0
+total = 0
 for item in ds:
     ctx = item["ctx"]
     gold_idx = int(item["label"])
@@ -69,9 +77,14 @@ for item in ds:
             pred_letter = c
             break
     expected = ["A", "B", "C", "D"][gold_idx]
-    if pred_letter == expected: correct += 1
+    if pred_letter == expected:
+        correct += 1
     total += 1
-results["hellaswag"] = {"total": total, "correct": correct, "accuracy": round(correct/max(total,1)*100,1)}
+results["hellaswag"] = {
+    "total": total,
+    "correct": correct,
+    "accuracy": round(correct / max(total, 1) * 100, 1),
+}
 print(f"  HellaSwag: {results['hellaswag']['accuracy']}% ({correct}/{total})")
 
 # ══════════════════════════════════════════════════════════════
@@ -80,7 +93,8 @@ print(f"  HellaSwag: {results['hellaswag']['accuracy']}% ({correct}/{total})")
 print("\n--- ARC Challenge ---")
 ds = load_dataset("allenai/ai2_arc", "ARC-Challenge", split="test", cache_dir="data/benchmarks")
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
-correct = 0; total = 0
+correct = 0
+total = 0
 for item in ds:
     question = item["question"]
     choices_dict = item["choices"]
@@ -98,18 +112,26 @@ for item in ds:
         if c in "ABCDE":
             pred_letter = c
             break
-    if pred_letter == answer: correct += 1
+    if pred_letter == answer:
+        correct += 1
     total += 1
-results["arc_challenge"] = {"total": total, "correct": correct, "accuracy": round(correct/max(total,1)*100,1)}
+results["arc_challenge"] = {
+    "total": total,
+    "correct": correct,
+    "accuracy": round(correct / max(total, 1) * 100, 1),
+}
 print(f"  ARC Challenge: {results['arc_challenge']['accuracy']}% ({correct}/{total})")
 
 # ══════════════════════════════════════════════════════════════
 # TruthfulQA
 # ══════════════════════════════════════════════════════════════
 print("\n--- TruthfulQA ---")
-ds = load_dataset("truthfulqa/truthful_qa", "generation", split="validation", cache_dir="data/benchmarks")
+ds = load_dataset(
+    "truthfulqa/truthful_qa", "generation", split="validation", cache_dir="data/benchmarks"
+)
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
-correct = 0; total = 0
+correct = 0
+total = 0
 for item in ds:
     question = item["question"]
     correct_answers = item["correct_answers"]
@@ -119,9 +141,14 @@ for item in ds:
     pred = out["choices"][0]["text"].strip().lower()
     matches_correct = any(ca.lower() in pred for ca in correct_answers)
     matches_incorrect = any(ia.lower() in pred for ia in incorrect_answers)
-    if matches_correct and not matches_incorrect: correct += 1
+    if matches_correct and not matches_incorrect:
+        correct += 1
     total += 1
-results["truthfulqa"] = {"total": total, "correct": correct, "accuracy": round(correct/max(total,1)*100,1)}
+results["truthfulqa"] = {
+    "total": total,
+    "correct": correct,
+    "accuracy": round(correct / max(total, 1) * 100, 1),
+}
 print(f"  TruthfulQA: {results['truthfulqa']['accuracy']}% ({correct}/{total})")
 
 # ══════════════════════════════════════════════════════════════
@@ -130,7 +157,8 @@ print(f"  TruthfulQA: {results['truthfulqa']['accuracy']}% ({correct}/{total})")
 print("\n--- GSM8K ---")
 ds = load_dataset("openai/gsm8k", "main", split="test", cache_dir="data/benchmarks")
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
-correct = 0; total = 0
+correct = 0
+total = 0
 for item in ds:
     question = item["question"]
     expected = item["answer"].split("####")[-1].strip().replace(",", "")
@@ -142,31 +170,47 @@ for item in ds:
         pred_num = pred.split("####")[-1].strip().replace(",", "")
     else:
         nums = re.findall(r"[-+]?\d+\.?\d*", pred)
-        if nums: pred_num = nums[-1]
-    if pred_num == expected: correct += 1
+        if nums:
+            pred_num = nums[-1]
+    if pred_num == expected:
+        correct += 1
     total += 1
-results["gsm8k"] = {"total": total, "correct": correct, "accuracy": round(correct/max(total,1)*100,1)}
+results["gsm8k"] = {
+    "total": total,
+    "correct": correct,
+    "accuracy": round(correct / max(total, 1) * 100, 1),
+}
 print(f"  GSM8K: {results['gsm8k']['accuracy']}% ({correct}/{total})")
 
 # ══════════════════════════════════════════════════════════════
 # Winogrande
 # ══════════════════════════════════════════════════════════════
 print("\n--- Winogrande ---")
-ds = load_dataset("allenai/winogrande", "winogrande_xl", split="validation", cache_dir="data/benchmarks")
+ds = load_dataset(
+    "allenai/winogrande", "winogrande_xl", split="validation", cache_dir="data/benchmarks"
+)
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
-correct = 0; total = 0
+correct = 0
+total = 0
 for item in ds:
     sentence = item["sentence"]
     answer = item["answer"]
     option1 = item["option1"]
     option2 = item["option2"]
-    prompt = f"Choose 1 or 2: {sentence.replace('_', '______')}\n1: {option1}\n2: {option2}\nNumber:"
+    prompt = (
+        f"Choose 1 or 2: {sentence.replace('_', '______')}\n1: {option1}\n2: {option2}\nNumber:"
+    )
     out = llm.create_completion(prompt=prompt, max_tokens=10, temperature=0.0)
     pred = out["choices"][0]["text"].strip()
     pred_num = "1" if "1" in pred[:5] else "2" if "2" in pred[:5] else ""
-    if pred_num == answer: correct += 1
+    if pred_num == answer:
+        correct += 1
     total += 1
-results["winogrande"] = {"total": total, "correct": correct, "accuracy": round(correct/max(total,1)*100,1)}
+results["winogrande"] = {
+    "total": total,
+    "correct": correct,
+    "accuracy": round(correct / max(total, 1) * 100, 1),
+}
 print(f"  Winogrande: {results['winogrande']['accuracy']}% ({correct}/{total})")
 
 # ══════════════════════════════════════════════════════════════
@@ -176,9 +220,9 @@ total_correct = sum(r["correct"] for r in results.values())
 total_questions = sum(r["total"] for r in results.values())
 overall = round(total_correct / max(total_questions, 1) * 100, 1)
 
-print(f"\n{'='*60}")
+print(f"\n{'=' * 60}")
 print("PHI-4 14B BASELINE RESULTS (v2)")
-print(f"{'='*60}")
+print(f"{'=' * 60}")
 for name, r in results.items():
     print(f"  {name}: {r['accuracy']}% ({r['correct']}/{r['total']})")
 print(f"\nOverall: {total_correct}/{total_questions} = {overall}%")
