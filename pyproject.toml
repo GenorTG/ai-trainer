@@ -45,6 +45,7 @@ ignore = [
     "E402",     # module level import not at top (intentional in some files)
     "E741",     # ambiguous variable name (l, I, O — stylistic)
     "BLE001",   # blind-except (we catch generic Exception intentionally)
+    "E702",     # multiple statements on one line (semicolons in scripts)
     "RUF059",   # unpacked variable never used (unpacking API result tuples)
 ]
 
@@ -71,7 +72,7 @@ indent-style = "space"
 docstring-code-format = true
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 ignore_missing_imports = true
 no_strict_optional = true
 warn_unused_ignores = true
@@ -128,7 +129,6 @@ filterwarnings = [
     "ignore::pytest.PytestUnknownMarkWarning",  # allow custom markers
     "ignore::DeprecationWarning:starlette.*",     # starlette deprecation OK
     "ignore::DeprecationWarning:jinja2.*",        # jinja2 deprecation OK
-    "ignore::starlette.exceptions.StarletteDeprecationWarning",  # httpx vs httpx2
     "ignore::pytest.PytestUnraisableExceptionWarning",  # httpx/anyio async cleanup
     "ignore::RuntimeWarning",         # coroutine cleanup warnings from httpx
 ]
@@ -158,3 +158,6 @@ exclude_lines = [
 precision = 1
 show_missing = true
 skip_covered = false
+[[tool.mypy.overrides]]
+module = "numpy.*"
+ignore_missing_imports = true

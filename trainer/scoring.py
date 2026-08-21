@@ -1,9 +1,8 @@
 """Industry-standard scoring methods for LLM benchmarks."""
 import re
-from typing import Optional
 
 
-def extract_mcq_answer(response: str, choices: list = None) -> str:
+def extract_mcq_answer(response: str, choices: list | None = None) -> str:
     """Extract the chosen letter from a multiple-choice response.
 
     Industry standard: parse the response to find the first valid letter.
@@ -49,7 +48,7 @@ def extract_mcq_answer(response: str, choices: list = None) -> str:
     return ""
 
 
-def extract_math_answer(response: str, expected: str = None) -> str:
+def extract_math_answer(response: str, expected: str | None = None) -> str:
     """Extract the numeric answer from a math response.
 
     Industry standard:

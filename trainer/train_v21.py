@@ -8,7 +8,11 @@ Changes from v20:
 3. Lower learning rate: 5e-5 (was 8e-5) to preserve more base knowledge
 4. Same LoRA config: r=64, target modules same
 """
-import os, sys, time, traceback
+import os
+import sys
+import time
+import traceback
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["UNSLOTH_SKIP_TORCHVISION_CHECK"] = "1"
 
@@ -18,17 +22,17 @@ OUTPUT_DIR = sys.argv[2] if len(sys.argv) > 2 else "./output_gemma4_v21"
 print(f"[{time.strftime('%H:%M:%S')}] === Chris AI v21 Training ===")
 print(f"[{time.strftime('%H:%M:%S')}] Dataset: {DATA_PATH}")
 print(f"[{time.strftime('%H:%M:%S')}] Key changes from v20:")
-print(f"  - Knowledge preservation: 97% persona + 3% general knowledge")
-print(f"  - Lower LR: 5e-5 (was 8e-5) to preserve base knowledge")
-print(f"  - Same LoRA config: r=64")
+print("  - Knowledge preservation: 97% persona + 3% general knowledge")
+print("  - Lower LR: 5e-5 (was 8e-5) to preserve base knowledge")
+print("  - Same LoRA config: r=64")
 print("")
 
 try:
-    import torch
-    from unsloth import FastLanguageModel
-    from trl import SFTTrainer
-    from transformers import TrainingArguments
     from datasets import load_dataset
+    import torch
+    from transformers import TrainingArguments
+    from trl import SFTTrainer
+    from unsloth import FastLanguageModel
 
     print(f"[{time.strftime('%H:%M:%S')}] Loading base model (Gemma 4 E4B 4-bit)...")
     model, tokenizer = FastLanguageModel.from_pretrained(

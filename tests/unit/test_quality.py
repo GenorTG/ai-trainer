@@ -189,7 +189,7 @@ class TestDataAugment:
         data_file.write_text("{}")
 
         with patch(
-            "finetune_studio.training.data_augmentation.DataAugmenter"
+            "finetune_studio.training.data_augmentation._DataAugmenterWrapper"
         ) as MockAugmenter:
             mock_instance = MagicMock()
             mock_instance.run.return_value = _make_mock_augment_result()
@@ -212,7 +212,7 @@ class TestDataAugment:
         data_file.write_text("{}")
 
         with patch(
-            "finetune_studio.training.data_augmentation.DataAugmenter"
+            "finetune_studio.training.data_augmentation._DataAugmenterWrapper"
         ) as MockAugmenter:
             mock_instance = MagicMock()
             mock_instance.run.return_value = {}
@@ -246,7 +246,7 @@ class TestDataAugment:
         data_file.write_text("{}")
 
         with patch(
-            "finetune_studio.training.data_augmentation.DataAugmenter"
+            "finetune_studio.training.data_augmentation._DataAugmenterWrapper"
         ) as MockAugmenter:
             MockAugmenter.side_effect = RuntimeError("Augment failed")
 

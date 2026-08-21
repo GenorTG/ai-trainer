@@ -59,10 +59,10 @@ from finetune_studio.webui.routes import (
     training,
 )
 
-app.include_router(pages.router)  # type: ignore[has-type]
-app.include_router(models.router, prefix="/api/models", tags=["models"])  # type: ignore[has-type]
+app.include_router(pages.router)
+app.include_router(models.router, prefix="/api/models", tags=["models"])
 app.include_router(training.router, prefix="/api/training", tags=["training"])  # type: ignore[has-type]
-app.include_router(data.router, prefix="/api/data", tags=["data"])  # type: ignore[has-type]
+app.include_router(data.router, prefix="/api/data", tags=["data"])
 app.include_router(testing.router, prefix="/api/testing", tags=["testing"])  # type: ignore[has-type]
-app.include_router(comparison.router, prefix="/api/compare", tags=["compare"])  # type: ignore[has-type]
-app.include_router(quality.router)  # type: ignore[has-type]  # already self-prefixed /api/data
+app.include_router(comparison.router, prefix="/api/compare", tags=["compare"])
+app.include_router(quality.router)  # already self-prefixed /api/data

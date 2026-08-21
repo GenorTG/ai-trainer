@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Phi-4 14B baseline benchmark — v3 with proper scoring."""
-import sys
-import os
-import json
-import time
-import re
 import ast
+import json
+import sys
 
 sys.path.insert(0, "/home/genortg/finetune-studio/src")
 from llama_cpp import Llama
+
 from finetune_studio.benchmarks.scoring import (
-    extract_mcq_answer, extract_math_answer, normalize_math_answer,
-    score_truthfulqa, score_winogrande
+    extract_math_answer,
+    extract_mcq_answer,
+    normalize_math_answer,
+    score_truthfulqa,
+    score_winogrande,
 )
 
 MODEL_PATH = "baselines/phi-4-14b-Q4_K_M.gguf"
@@ -30,6 +31,7 @@ results = {}
 # ══════════════════════════════════════════════════════════════
 print("\n--- MMLU ---")
 from datasets import load_dataset
+
 ds = load_dataset("cais/mmlu", "all", split="test", cache_dir="data/benchmarks")
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
 correct = 0; total = 0
@@ -164,7 +166,7 @@ total_questions = sum(r["total"] for r in results.values())
 overall = round(total_correct / max(total_questions, 1) * 100, 1)
 
 print(f"\n{'='*60}")
-print(f"PHI-4 14B BASELINE RESULTS (v3 — proper scoring)")
+print("PHI-4 14B BASELINE RESULTS (v3 — proper scoring)")
 print(f"{'='*60}")
 for name, r in results.items():
     print(f"  {name}: {r['accuracy']}% ({r['correct']}/{r['total']})")
@@ -173,4 +175,4 @@ print(f"\nOverall: {total_correct}/{total_questions} = {overall}%")
 with open("baselines/phi4_baseline_v3.json", "w") as f:
     json.dump({"model": "Phi-4 14B Q4_K_M", "results": results, "overall": overall,
                "scoring": "Industry-standard extraction (regex, normalized match)"}, f, indent=2)
-print(f"\nResults saved to baselines/phi4_baseline_v3.json")
+print("\nResults saved to baselines/phi4_baseline_v3.json")

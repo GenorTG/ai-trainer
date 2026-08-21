@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """Robust benchmark runner for Phi-4 14B."""
-import sys
-import os
 import json
-import time
+import sys
 
 sys.path.insert(0, "/home/genortg/finetune-studio/src")
 
@@ -24,8 +22,9 @@ results = {}
 # MMLU
 # ══════════════════════════════════════════════════════════════
 print("\n--- MMLU ---")
-from datasets import load_dataset
 import ast
+
+from datasets import load_dataset
 
 ds = load_dataset("cais/mmlu", "all", split="test", cache_dir="data/benchmarks")
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
@@ -154,6 +153,7 @@ ds = load_dataset("openai/gsm8k", "main", split="test", cache_dir="data/benchmar
 ds = ds.select(range(min(NUM_SAMPLES, len(ds))))
 
 import re
+
 correct = 0
 total = 0
 for item in ds:
@@ -217,7 +217,7 @@ total_questions = sum(r["total"] for r in results.values())
 overall = round(total_correct / max(total_questions, 1) * 100, 1)
 
 print(f"\n{'='*60}")
-print(f"PHI-4 14B BASELINE RESULTS")
+print("PHI-4 14B BASELINE RESULTS")
 print(f"{'='*60}")
 for name, r in results.items():
     print(f"  {name}: {r['accuracy']}% ({r['correct']}/{r['total']})")
@@ -226,4 +226,4 @@ print(f"\nOverall: {total_correct}/{total_questions} = {overall}%")
 # Save results
 with open("baselines/phi4_baseline_results.json", "w") as f:
     json.dump({"model": "Phi-4 14B Q4_K_M", "results": results, "overall": overall}, f, indent=2)
-print(f"\nResults saved to baselines/phi4_baseline_results.json")
+print("\nResults saved to baselines/phi4_baseline_results.json")

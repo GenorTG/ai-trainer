@@ -19,6 +19,8 @@ from __future__ import annotations
 import sys
 from unittest.mock import MagicMock
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="starlette")
 from fastapi.testclient import TestClient
 import pytest
 

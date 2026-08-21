@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """Phi-4 14B baseline — with timeout protection."""
-import sys
-import os
-import json
-import time
-import re
 import ast
+import json
 import signal
+import sys
 
 sys.path.insert(0, "/home/genortg/finetune-studio/src")
 from llama_cpp import Llama
+
 from finetune_studio.benchmarks.scoring import scorer
 
 MODEL_PATH = "baselines/phi-4-14b-Q4_K_M.gguf"
@@ -29,6 +27,7 @@ print("Model loaded!")
 results = {}
 from datasets import load_dataset
 
+
 def run_benchmark(name, ds, eval_fn):
     """Run a single benchmark with timeout."""
     print(f"\n--- {name} ---")
@@ -45,7 +44,7 @@ def run_benchmark(name, ds, eval_fn):
         print(f"  {acc}% ({correct}/{total})")
     except TimeoutError:
         signal.alarm(0)
-        print(f"  TIMEOUT after 10 minutes")
+        print("  TIMEOUT after 10 minutes")
         results[name] = {"total": total, "correct": correct, "accuracy": round(correct/max(total,1)*100,1) if total > 0 else 0}
     except Exception as e:
         signal.alarm(0)

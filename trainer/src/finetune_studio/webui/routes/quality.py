@@ -61,7 +61,9 @@ def data_augment(req: DataJobRequest) -> DataJobResponse:
     if not Path(req.path).exists():
         raise HTTPException(status_code=404, detail=f"File not found: {req.path}")
     try:
-        from finetune_studio.training.data_augmentation import DataAugmenter
+        from finetune_studio.training.data_augmentation import (
+            _DataAugmenterWrapper as DataAugmenter,
+        )
         augmenter = DataAugmenter(req.path, output_path=req.output)
         result = augmenter.run()
         return DataJobResponse(status="ok", command="augment", path=req.path, result=result)

@@ -197,3 +197,30 @@ class DataAugmenter:
 
         random.shuffle(augmented)
         return augmented
+
+
+# Route-compatible wrapper
+class _DataAugmenterWrapper:
+    """Wraps DataAugmenter for route compatibility (accepts path + output)."""
+
+    def __init__(self, path: str, output_path: str | None = None):
+        self._path = path
+        self._output = output_path
+
+    def run(self) -> dict:
+        import json
+        data = []
+        with open(self._path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    data.append(json.loads(line))
+        augmenter = DataAugmenter()
+        augmented = augmenter.augment_dataset(data)
+        if self._output:
+            import pathlib
+            out = pathlib.Path(self._output)
+            with open(out, "w") as f:
+                for item in augmented:
+                    f.write(json.dumps(item, ensure_ascii=False) + "\n")
+        return {"original": len(data), "augmented": len(augmented), "output": self._output}

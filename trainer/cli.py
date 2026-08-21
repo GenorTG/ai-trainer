@@ -1,8 +1,9 @@
 """Finetune Studio CLI — manage models, training, and testing from the terminal."""
 import argparse
 import json
-import sys
 import os
+import sys
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -102,9 +103,10 @@ def cmd_models(args):
 
 
 def cmd_train(args):
-    from finetune_studio.training.engine import TrainingEngine, TrainingConfig
-    from finetune_studio.training.data import load_jsonl
     import time
+
+    from finetune_studio.training.data import load_jsonl
+    from finetune_studio.training.engine import TrainingConfig, TrainingEngine
 
     if not os.path.exists(args.model):
         print(f"Error: Model not found: {args.model}")
@@ -251,8 +253,9 @@ def cmd_validate(args):
 
 
 def cmd_convert(args):
-    from finetune_studio.data.converter import jsonl_to_json, json_to_jsonl, csv_to_jsonl
     from pathlib import Path
+
+    from finetune_studio.data.converter import csv_to_jsonl, json_to_jsonl, jsonl_to_json
 
     src = Path(args.source)
     if not src.exists():
