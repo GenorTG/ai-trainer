@@ -20,8 +20,10 @@ import sys
 from unittest.mock import MagicMock
 
 import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="starlette")
+_warnings_before = warnings.filters[:]
+warnings.simplefilter("ignore")  # suppress ALL warnings during import
 from fastapi.testclient import TestClient
+warnings.filters[:] = _warnings_before  # restore original filters
 import pytest
 
 # ── Session-wide heavy-resource mocks ─────────────────────────────────────
