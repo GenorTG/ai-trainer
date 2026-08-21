@@ -12,6 +12,7 @@ extend-exclude = [
     "unsloth_compiled_cache",
     "build",
     "dist",
+    "*.md",
 ]
 
 [tool.ruff.lint]
