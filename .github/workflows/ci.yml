@@ -118,7 +118,7 @@ jobs:
           pip install pytest pytest-asyncio pytest-mock pytest-cov
 
       - name: Run all tests with coverage
-        run: python tests/run_all.py --coverage
+        run: pytest tests/unit tests/api tests/frontend --cov=finetune_studio --cov=inference_server --cov-report=html:tests/coverage_html --cov-report=term -q --tb=short -m "not slow"
 
       - name: Upload coverage report
         if: always()
